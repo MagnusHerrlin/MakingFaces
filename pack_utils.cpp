@@ -159,13 +159,16 @@ void ensureBaseIni(const std::string& iniPath)
     out << "[network]\nproto=sacn\nuniverse=1\nstart_channel=1\n\n"
         << "[display]\ndisplay=1\nfps=50\nfullscreen=true\nsmooth_scale=false\nfade_ms=1200\nsave_hold_ms=5000\n\n"
         << "[paths]\nassets_dir=assets\naudio_dir=audio\naudio_monitor=Monitor\n\n"
-        << "[offsets_default]\neye_left_x=0\neye_left_y=10\neye_right_x=0\neye_right_y=10\n"
-        << "mouth_x=0\nmouth_y=0\nmouth_split=0\nnose_x=0\nnose_y=0\n"
-        << "glasses_x=0\nglasses_y=0\nglasses_split=0\nbrows_x=0\nbrows_y=-10\nbrows_split=0\n"
-        << "beard_x=0\nbeard_y=-4\nbeard_split=0\nface_x=0\nface_y=6\n"
-        << "ears_x=0\nears_y=0\nears_split=0\nhair_x=0\nhair_y=0\nhat_x=0\nhat_y=0\n"
+        << "[offsets_default]\neye_left_x=0\neye_left_y=-80\neye_right_x=0\neye_right_y=-80\n"
+        << "mouth_x=0\nmouth_y=-90\nmouth_split=0\nnose_x=0\nnose_y=-90\n"
+        << "glasses_x=0\nglasses_y=-90\nglasses_split=0\nbrows_x=0\nbrows_y=-100\nbrows_split=0\n"
+        << "beard_x=0\nbeard_y=-94\nbeard_split=0\nface_x=0\nface_y=-84\n"
+        << "ears_x=0\nears_y=-90\nears_split=0\nhair_x=0\nhair_y=-90\nhat_x=0\nhat_y=-90\n"
+        << "makeup_x=0\nmakeup_y=-84\n"
         << "eye_scale=1\nmouth_scale=1\n";
 }
+
+
 
 void appendFaceOffsets(int faceId, const std::map<std::string, std::string>& kv, const std::string& iniPath)
 {
@@ -483,7 +486,7 @@ void cleanSvgAndSaveZip(const std::string& packName, const std::string& packsDir
     fs::remove(zipOut);
     std::string cmd = "zip -qr \"" + zipOut + "\" assets makingfaces.ini";
     int rc = std::system(cmd.c_str());
-    if (rc == 0)
+    if (rc == 0 && packName != "default")
     {
         fs::copy_file(zipOut, packsDir + "/default.zip", fs::copy_options::overwrite_existing);
         std::cout << "[PACKED] Created " << zipOut << " & updated " << packsDir << "/default.zip\n";

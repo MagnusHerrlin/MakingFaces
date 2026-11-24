@@ -16,7 +16,7 @@
 
 constexpr int      BASE_CANVAS_W            = 600;
 constexpr int      BASE_CANVAS_H            = 800;
-constexpr int      GLOBAL_FACE_Y_OFFSET     = 50;
+constexpr int      GLOBAL_FACE_Y_OFFSET     = -80;
 constexpr int      PROFILE_FACE_START_INDEX = 127;
 constexpr int      JAW_LAYER_START_INDEX    = 97;
 constexpr int      ARTNET_PORT              = 6454;
@@ -123,6 +123,12 @@ struct MaskOffsetProfile {
     float fx_scale      = 1.0f;
 };
 
+struct FxSpriteBank {
+    std::array<SDL_Texture*, 17> sprites{};
+    std::array<SDL_Texture*, 17> blurSprites{};
+    SDL_Texture*                 fog2 = nullptr;
+};
+
 struct MacroComboPreset {
     bool     enabled      = false;
     uint8_t  face         = 1;
@@ -135,7 +141,7 @@ struct MacroComboPreset {
     uint8_t  hat          = 0;
     uint8_t  brows        = 1;
     uint8_t  bg_scene     = 0;
-    uint16_t fx_mask      = 0;
+    uint32_t fx_mask      = 0;
     int      teeth        = 1;
     int      lip_color    = 3;
     int      eyelash      = 0;
@@ -144,7 +150,9 @@ struct MacroComboPreset {
     int      eye_bank     = -1;
     int      anim_id      = 0;
     bool     dual_profile = false;
+    bool     hide_mouth   = false;
 };
+
 
 struct FaceAppConfig {
     std::string proto         = "sacn";
@@ -184,11 +192,6 @@ struct ParallaxBackdrop {
     SDL_Texture* midLayer    = nullptr;
     SDL_Texture* frontLayer  = nullptr;
     SDL_Texture* single      = nullptr;
-};
-
-struct FxSpriteBank {
-    std::array<SDL_Texture*, 17> sprites{};
-    SDL_Texture*                 fog2 = nullptr;
 };
 
 struct PackInspectItem {
@@ -351,7 +354,7 @@ struct AppRuntimeState {
     bool     manualHideMouth  = false;
     bool     manualHideNose   = false;
     bool     manualHideBrows  = false;
-    uint16_t manualFxMask     = 0;
+    uint32_t manualFxMask     = 0;
 
     uint8_t  curFace          = 1;
     uint8_t  curMakeup        = 0;
@@ -363,7 +366,7 @@ struct AppRuntimeState {
     uint8_t  curHat           = 0;
     uint8_t  curBrows         = 1;
     uint8_t  curBgScene       = 0;
-    uint16_t curFxMask        = 0;
+    uint32_t curFxMask        = 0;
     int      curTeeth         = -1;
     int      curLipColor      = -1;
     int      curEyelash       = -1;

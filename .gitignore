@@ -1,36 +1,16 @@
-# Compiled C++ binaries and object files
-*.o
+# Binaries & build artifacts
 MakingFaces
-makeface
+pack_default
+pack_monkeys
+pack_cats
+pack_halloween
+*.o
 
-# Temporary SVG intermediates and unpacked runtime assets/config
-*.tmp.svg
+# Runtime working folders & temporary files
 assets/
 makingfaces.ini
-
-# Import studio working folders & captured camera photos
-import/*
-!import/.gitkeep
-
-# Temporary ZIP pack browser / undo snapshots (keep published packs/*.zip)
+import/
 packs/.undo_*.zip
 packs/.thumb_tmp/
 packs/.inspect_tmp/
-
-# User-specific audio files
-audio/*.wav
-audio/*.mp3
-
-# Python cache and virtual environments
-__pycache__/
-*.py[cod]
-.venv/
-venv/
-
-# Editor and OS files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
+*.tmp

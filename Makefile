@@ -4,7 +4,8 @@ LDFLAGS  := $(shell sdl2-config --libs) -lSDL2_image -lSDL2_mixer -lpthread $(sh
 
 TARGET   := MakingFaces
 OBJS     := main.o eye_functions.o face_engine.o macro_engine.o audio_engine.o
-PACKS    := pack_monkeys pack_cats pack_halloween
+PACKS    := pack_default pack_monkeys pack_cats pack_halloween
+
 
 all: $(TARGET)
 
@@ -36,6 +37,9 @@ pack_cats: pack_cats.cpp pack_utils.cpp pack_utils.h
 
 pack_halloween: pack_halloween.cpp pack_utils.cpp pack_utils.h
 	$(CXX) $(CXXFLAGS) -o $@ pack_halloween.cpp pack_utils.cpp $(LDFLAGS)
+
+pack_default: pack_default.cpp pack_utils.cpp pack_utils.h
+	$(CXX) $(CXXFLAGS) -o $@ pack_default.cpp pack_utils.cpp $(LDFLAGS)
 
 clean:
 	rm -f $(OBJS) $(TARGET) $(PACKS)

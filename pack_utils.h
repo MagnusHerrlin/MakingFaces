@@ -2,11 +2,11 @@
 // MakingFaces - Shared 3D SVG/PNG Asset & Theme Pack Generator Utilities
 // Architecture designed by Magnus Herrlin 2026
 // ==============================================================================
-#pragma once
 
-// ==============================================================================
-// 1. INCLUDES AND DATA STRUCTURES
-// ==============================================================================
+#ifndef PACK_UTILS_H
+#define PACK_UTILS_H
+
+#include <cstdint>
 #include <map>
 #include <string>
 #include <vector>
@@ -28,34 +28,35 @@ struct PackMacroSpec {
     int  eyelash      = 0;
     int  eye_style    = -1;
     int  iris         = -1;
-    int  anim_id      = 1;
+    int  anim_id      = 0;
     bool dual_profile = false;
     int  eye_bank     = -1;
 };
 
-// ==============================================================================
-// 2. XML/SVG CONSTRUCTORS, RASTERIZER & ZIP ARCHIVE HELPERS
-// ==============================================================================
+
+// Safe 7-bit ASCII XML/SVG tag builders
 std::string svgTag(const std::string& tag, const std::string& attrs = "", bool selfClose = true);
 std::string svgClose(const std::string& tag);
 std::string wrapSvgCanvas(const std::string& body, const std::string& defs = "", int w = 600, int h = 800);
 std::string getStandardEyeCutoutMask(void);
 
+// Asset slot allocation & SVG-to-PNG rasterization
 int  nextAssetIdx(const std::string& folder);
 bool exportSvgToPng(const std::string& relPathNoExt, const std::string& svgXml, int w = 600, int h = 800, float blurSigma = 0.0f);
 int  saveSvgAsset(const std::string& folder, const std::string& svgXml, int w = 600, int h = 800, float blurSigma = 0.0f);
 void saveSvgAssetAt(const std::string& folder, int idx, const std::string& svgXml, int w = 600, int h = 800, float blurSigma = 0.0f);
 
+// INI configuration & theme pack ZIP archiver
 void ensureBaseIni(const std::string& iniPath = "makingfaces.ini");
 void appendFaceOffsets(int faceId, const std::map<std::string, std::string>& kv, const std::string& iniPath = "makingfaces.ini");
 void appendMacroCombo(const PackMacroSpec& m, const std::string& iniPath = "makingfaces.ini");
-void generateDefaultFxBank(void);
 void generateDefaultBrowsBank(void);
-void cleanSvgAndSaveZip(const std::string& zipBaseName, const std::string& packsDir = "packs");
+void generateDefaultFxBank(void);
+void cleanSvgAndSaveZip(const std::string& packName, const std::string& packsDir = "packs");
 
-// ==============================================================================
-// 3. 3D SIDE-PROFILE PRIMITIVE BUILDERS (127+ LEFT & RIGHT PROFILES)
-// ==============================================================================
+// 3D Side-profile primitive builders (127+ left & right profiles)
 std::string build3dProfileHeadSvg(const std::string& tag, const std::string& side, const std::string& f1, const std::string& f2, const std::string& f3, const std::string& mh, const std::string& mm, const std::string& md);
-std::string build3dProfileEarsSvg(const std::string& tag, const std::string& side, const std::string& hi, const std::string& mid, const std::string& deep, const std::string& inHi, const std::string& inDeep, int earR);
+std::string build3dProfileEarsSvg(const std::string& tag, const std::string& side, const std::string& hi, const std::string& mid, const std::string& deep, const std::string& inHi, const std::string& inDeep, int earR = 46);
 std::string build3dProfileNoseSvg(const std::string& tag, const std::string& side, const std::string& hi, const std::string& mid, const std::string& deep);
+
+#endif
