@@ -8,6 +8,14 @@
 ![License](https://shields.io)
 
 
+![C++17](https://shields.io)
+![Platform](https://shields.io)
+![SDL2](https://shields.io)
+![DMX](https://shields.io)
+![Lines of Code](https://shields.io)
+![License](https://shields.io)
+
+
 **Architecture & C++17 Engine by Magnus Herrlin (2026)**  
 *Inspired by Bodmer `TFT_eSPI` framebuffer sprites and Adafruit `Uncanny_Eyes` polar coordinate eye rendering.*
 
