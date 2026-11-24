@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MakingFaces v1.0.0 — Interactive Manual &amp; DMX Reference</title>
+<style>
+  :root {
+    --bg: #0b0f17;
+    --panel: #121826;
+    --border: #1e293b;
+    --accent: #00e5ff;
+    --green: #00ff6e;
+    --gold: #ffe678;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.55;
+  }
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #09121e 100%);
+    border-bottom: 1px solid var(--accent);
+    padding: 28px 24px; text-align: center;
+  }
+  header h1 { margin: 0 0 6px; color: var(--accent); letter-spacing: 1px; font-size: 1.9rem; }
+  header p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+  .search-bar {
+    max-width: 960px; margin: 18px auto 0; display: flex; gap: 10px;
+  }
+  .search-bar input {
+    width: 100%; padding: 11px 16px; border-radius: 8px;
+    border: 1px solid var(--accent); background: #080c14; color: #fff; font-size: 1rem;
+  }
+  main { max-width: 1100px; margin: 24px auto 60px; padding: 0 20px; }
+  section {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 22px 24px; margin-bottom: 24px;
+  }
+  h2 { margin-top: 0; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { color: var(--gold); margin-bottom: 6px; }
+  .pipeline {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 14px;
+  }
+  .card {
+    background: #0d131f; border: 1px solid #263449; border-radius: 10px; padding: 16px;
+  }
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.78rem;
+    font-weight: 700; background: rgba(0, 229, 255, 0.15); color: var(--accent); margin-bottom: 6px;
+  }
+  .badge.green { background: rgba(0, 255, 110, 0.15); color: var(--green); }
+  kbd {
+    display: inline-block; padding: 2px 7px; font-family: monospace; font-size: 0.88rem;
+    background: #1e293b; border: 1px solid #475569; border-radius: 4px; color: var(--gold);
+  }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.93rem; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  th { color: var(--accent); background: #0d131f; }
+  tr:hover td { background: rgba(0, 229, 255, 0.04); }
+  code { color: var(--green); font-family: monospace; }
+</style>
+</head>
+<body>
+<header>
+  <h1>MAKINGFACES v1.0.0 — INTERACTIVE REFERENCE</h1>
+  <p>Architecture by Magnus Herrlin (2026) &bull; Wayland/SDL2 Animatronic Compositor &amp; 38-Channel Art-Net/sACN Engine</p>
+  <div class="search-bar">
+    <input type="text" id="filterInput" onkeyup="filterTables()" placeholder="Search keys, layers, DMX channels, camera, import, macros...">
+  </div>
+</header>
+
+<main>
+  <section>
+    <h2>1. Capture, Import &amp; 14-Layer Live Calibration Pipeline</h2>
+    <p>MakingFaces turns any live camera frame or external image into a calibrated, DMX-ready character layer in three seamless stages:</p>
+    <div class="pipeline">
+      <div class="card">
+        <span class="badge">STAGE 1 &bull; CAPTURE</span>
+        <h3>Camera &amp; USB Microscope (<kbd>Ctrl+P</kbd>)</h3>
+        <ul>
+          <li>Probes <code>/dev/video0..3</code> (USB V4L2) or Pi CSI (<code>rpicam-still</code>).</li>
+          <li><kbd>R</kbd> rotates feed 90&deg; for vertically mounted webcams.</li>
+          <li><kbd>Space</kbd>/<kbd>Enter</kbd> snaps a true <strong>3:4 portrait</strong> photo (full head incl. hair &amp; chin) straight to <code>import/</code>.</li>
+          <li><kbd>E</kbd> captures a close-up microscope iris photo pre-assigned to <code>EYE_IRIS</code>.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="badge green">STAGE 2 &bull; CUTOUT &amp; INPAINT</span>
+        <h3>Calibration Studio (<kbd>Ctrl+I</kbd>)</h3>
+        <ul>
+          <li>Corner-sampled + white flood-fill removes studio backgrounds (<kbd>W</kbd>); adjust tolerance live with <kbd>B</kbd> / <kbd>Shift+B</kbd>.</li>
+          <li>Drag/Wheel fits the image; click any cyan eye/nose/mouth oval (turns <strong>bright green</strong>) to position cutouts (<kbd>V</kbd>) and OpenCV Telea erasure (<kbd>N</kbd>).</li>
+          <li><kbd>Enter</kbd> exports transparent PNGs to <code>assets/</code> &amp; updates <code>packs/default.zip</code>.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="badge">STAGE 3 &bull; ON-STAGE FIT</span>
+        <h3>14-Layer Live Calibration (<kbd>TAB</kbd>)</h3>
+        <ul>
+          <li>Press <kbd>TAB</kbd> to select any of the <strong>14 layers</strong> (<code>EYE_LEFT..HAT</code>, <code>MAKEUP</code>, <code>BG</code>, <code>FX</code>).</li>
+          <li><kbd>Arrows</kbd> move X/Y (<kbd>Shift</kbd> = 10 px).</li>
+          <li><kbd>Alt</kbd>+<kbd>Up/Down</kbd> scales <strong>50%&ndash;160%</strong>.</li>
+          <li><kbd>Ctrl</kbd>+<kbd>Left/Right</kbd> adjusts symmetrical split distance.</li>
+          <li><kbd>S</kbd> saves per-face profile to <code>makingfaces.ini</code>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  <section>
+    <h2>2. Keyboard Shortcuts &amp; Studio Controls</h2>
+    <table class="searchable">
+      <thead>
+        <tr><th>Key</th><th>Category</th><th>Action / Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><kbd>F1</kbd></td><td>System</td><td>Toggle Quick Help overlay</td></tr>
+        <tr><td><kbd>F2</kbd></td><td>System</td><td>Toggle live IP / Art-Net / sACN / FPS Telemetry bar</td></tr>
+        <tr><td><kbd>F3</kbd></td><td>Show</td><td>Reset &amp; resume Autonomous Macro Show from Slot #000</td></tr>
+        <tr><td><kbd>F4</kbd> / <kbd>S</kbd></td><td>Save</td><td>Unified Save: store active macro, all 14 layer offsets/scales, and rebuild <code>packs/default.zip</code></td></tr>
+        <tr><td><kbd>F5</kbd></td><td>System</td><td>Toggle On-Screen Display (OSD) banners</td></tr>
+        <tr><td><kbd>F6</kbd> / <kbd>X</kbd></td><td>Packs</td><td>Open ZIP Theme Pack Browser (<kbd>I</kbd>/<kbd>Down</kbd> Inspect, <kbd>Enter</kbd> Append, <kbd>R</kbd> Replace, <kbd>Del</kbd>&times;2 Wipe)</td></tr>
+        <tr><td><kbd>F7</kbd> / <kbd>Ctrl+Z</kbd></td><td>Undo</td><td>Restore previous <code>packs/default.zip</code> snapshot (5-step undo stack)</td></tr>
+        <tr><td><kbd>F8</kbd></td><td>Eyes</td><td>Open Adafruit Eye Browser with live 210&times;210 circular previews</td></tr>
+        <tr><td><kbd>F9</kbd></td><td>System</td><td>Toggle About &amp; Architecture Credits</td></tr>
+        <tr><td><kbd>F11</kbd> / Double-Click</td><td>Display</td><td>Toggle Wayland borderless fullscreen</td></tr>
+        <tr><td><kbd>F12</kbd></td><td>Show</td><td>Toggle manual Blackout</td></tr>
+        <tr><td><kbd>Ctrl+I</kbd></td><td>Studio</td><td>Open Calibration &amp; Import Studio (<code>import/</code>)</td></tr>
+        <tr><td><kbd>Ctrl+P</kbd></td><td>Studio</td><td>Open Live Camera &amp; USB Microscope Viewfinder</td></tr>
+        <tr><td><kbd>Ctrl+X</kbd></td><td>Packs</td><td>Export current theme as <code>packs/custom_NNN.zip</code></td></tr>
+        <tr><td><kbd>F</kbd> / <kbd>R</kbd> / <kbd>N</kbd> / <kbd>W</kbd></td><td>Layers</td><td>Step Face, Ears, Nose, Eyebrows (<kbd>Shift</kbd> = backward; <kbd>Ctrl+U/N/W</kbd> hide Mouth/Nose/Brows)</td></tr>
+        <tr><td><kbd>J</kbd> / <kbd>G</kbd> / <kbd>H</kbd> / <kbd>C</kbd> / <kbd>P</kbd></td><td>Layers</td><td>Step Beard/Jaw (97..108 articulated), Glasses, Hair, Cap/Hat, Paint/Makeup</td></tr>
+        <tr><td><kbd>K</kbd></td><td>Backdrop</td><td>Step 5-layer depth parallax background scene (<code>000..255</code>)</td></tr>
+        <tr><td><kbd>A</kbd> / <kbd>O</kbd> / <kbd>I</kbd> / <kbd>E</kbd> / <kbd>L</kbd> / <kbd>T</kbd></td><td>Expression</td><td>Step Animation (0..64), Eye Shape (1..12), Iris Size (1..10), Eyelashes (0..15), Lipstick (0..9), Teeth (0..15)</td></tr>
+        <tr><td><kbd>Y</kbd></td><td>Profile</td><td>Toggle Dual Side-Profile Dialogue Mode (two inward-facing characters take turns speaking)</td></tr>
+        <tr><td><kbd>PgUp</kbd> / <kbd>PgDn</kbd> &amp; <kbd>1..9,0</kbd></td><td>Macros</td><td>Select Macro Bank (00..24) &amp; recall slot (<kbd>Ctrl+1..9,0</kbd> copies current look to slot)</td></tr>
+        <tr><td><kbd>Alt+1..9,0</kbd> / <kbd>B</kbd></td><td>FX</td><td>Toggle individual animated FX sprites (<kbd>Ctrl+Alt+0</kbd> clears all FX)</td></tr>
+        <tr><td><kbd>TAB</kbd> + <kbd>Arrows</kbd></td><td>Calibrate</td><td>Select layer (14 total), <kbd>Arrows</kbd> move X/Y, <kbd>Alt+Up/Dn</kbd> scale 50..160%, <kbd>Ctrl+L/R</kbd> split</td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section>
+    <h2>3. 38-Channel Art-Net &amp; sACN (E1.31) DMX Channel Map</h2>
+    <table class="searchable">
+      <thead>
+        <tr><th>Offset</th><th>Ch (Start=1)</th><th>Parameter</th><th>DMX Value Mapping</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>+0</td><td>1</td><td>Left Eye X</td><td>0..255 (128 = center)</td></tr>
+        <tr><td>+1</td><td>2</td><td>Left Eye Y</td><td>0..255 (128 = center)</td></tr>
+        <tr><td>+2</td><td>3</td><td>Right Eye X</td><td>0..255 (128 = center)</td></tr>
+        <tr><td>+3</td><td>4</td><td>Right Eye Y</td><td>0..255 (128 = center)</td></tr>
+        <tr><td>+4</td><td>5</td><td>Iris Dilation</td><td>0..255 (pinpoint to dilated)</td></tr>
+        <tr><td>+5</td><td>6</td><td>Eyelid Blink</td><td>0 = open, 255 = closed</td></tr>
+        <tr><td>+6</td><td>7</td><td>Upper Eyelid</td><td>0..255 manual upper lid</td></tr>
+        <tr><td>+7</td><td>8</td><td>Lower Eyelid</td><td>0..255 manual lower lid</td></tr>
+        <tr><td>+8</td><td>9</td><td>Eye Style &amp; Shape</td><td>0..63 Default, 64..127 Dragon (+128 = lidless)</td></tr>
+        <tr><td>+9..+11</td><td>10..12</td><td>Eyelid RGB Tint</td><td>Custom eyelid Red, Green, Blue (0..255)</td></tr>
+        <tr><td>+12</td><td>13</td><td>Eyebrow Tilt / Mood</td><td>0 = angry, 128 = neutral, 255 = surprised</td></tr>
+        <tr><td>+13</td><td>14</td><td>Eyebrow Layer Index</td><td>0 = off, 1..255 = <code>assets/brows/NNN.png</code></td></tr>
+        <tr><td>+14</td><td>15</td><td>Mouth Open Gap</td><td>0 = closed, 255 = wide open</td></tr>
+        <tr><td>+15</td><td>16</td><td>Mouth Smile / Frown</td><td>0 = frown, 128 = neutral, 255 = big smile</td></tr>
+        <tr><td>+16</td><td>17</td><td>Mouth Width / Pucker</td><td>0 = narrow pucker, 128 = normal, 255 = wide</td></tr>
+        <tr><td>+17</td><td>18</td><td>Tooth Style Preset</td><td>0..255 mapped to 16 presets (0..15)</td></tr>
+        <tr><td>+18</td><td>19</td><td>Tongue / Lip Lick</td><td>0..160 stick out, 161..208 upper lick, 209..255 lower lick</td></tr>
+        <tr><td>+19</td><td>20</td><td>Lip Fullness / Hide</td><td>0..254 thickness, 255 = hide mouth</td></tr>
+        <tr><td>+20</td><td>21</td><td>Lipstick Palette</td><td>0..255 mapped to 10 color palettes (0..9)</td></tr>
+        <tr><td>+21..+28</td><td>22..29</td><td>Paper-Doll Layers</td><td>Face, Ears, Nose, Beard, Glasses, Hair, Hat, Makeup (0..255)</td></tr>
+        <tr><td>+29</td><td>30</td><td>Eyelash Style</td><td>0 = off, 1..255 Natural / Long / Winged / Dramatic</td></tr>
+        <tr><td>+30</td><td>31</td><td>Macro Recall Slot</td><td>0..9 manual DMX, 10..250 = Macro #000..#240, 251..255 hide modes</td></tr>
+        <tr><td>+31</td><td>32</td><td>Macro Control / Save</td><td>0..99 play, 100..199 live edit, 200..255 hold to save</td></tr>
+        <tr><td>+32</td><td>33</td><td>Background Scene</td><td>0 = black, 1..255 = <code>assets/bg/NNN*.png</code></td></tr>
+        <tr><td>+33</td><td>34</td><td>FX Overlay Trigger</td><td>0 = off, 1..15 animated FX sprite</td></tr>
+        <tr><td>+34..+36</td><td>35..37</td><td>Audio Track / Vol / Trig</td><td>Track (0..255), Volume (0..255), Trigger (0..127 once, 128..255 loop)</td></tr>
+        <tr><td>+37</td><td>38</td><td>Master Dimmer</td><td>0 = blackout, 255 = full brightness</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<script>
+function filterTables() {
+  const q = document.getElementById('filterInput').value.toLowerCase();
+  document.querySelectorAll('table.searchable tbody tr').forEach(tr => {
+    tr.style.display = tr.innerText.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>
