@@ -51,4 +51,4 @@ MakingFaces provides a complete three-stage pipeline from raw camera/image input
 
 * **[INSTALL.md](INSTALL.md)** — Dependencies, compilation (`make -j4`), Raspberry Pi 5 Wayland autostart, and CLI options.
 * **[USER_MANUAL.md](USER_MANUAL.md)** — Complete keyboard shortcut reference, 38-channel DMX map, and browser workflows.
-* **[manual.html](manual.html)** — Interactive offline HTML manual with searchable DMX tables and visual guides.
+* **[MANUAL.html](MANUAL.html)** — Interactive offline HTML manual with searchable DMX tables and visual guides.
