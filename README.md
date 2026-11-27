@@ -1,12 +1,25 @@
-![MakingFaces Preview 1](https://github.com)
 
-![MakingFaces Preview 2](https://github.com)
 
-![MakingFaces Preview 3](https://github.com)
+https://github.com/user-attachments/assets/b8f072fe-7e8c-446b-acf3-c29ae0c4eb60
 
-![MakingFaces Preview 4](https://github.com)
 
-![MakingFaces Preview 5](https://github.com)
+
+https://github.com/user-attachments/assets/9a71e17c-1fc9-4ddb-b464-3e552d804bee
+
+
+
+https://github.com/user-attachments/assets/b2f18237-b189-4503-89d2-3554c82d9ea7
+
+
+
+https://github.com/user-attachments/assets/9e0e2b99-1aec-4e31-a15d-7fc118b4d9a6
+
+
+
+
+
+
+
 
 # MakingFaces v1.0.0 — Wayland/SDL2 Animatronic Face Compositor & Art-Net/sACN Engine
 
