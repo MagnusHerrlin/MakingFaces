@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE FixtureDefinition>
+<FixtureDefinition xmlns="http://qlcplus.org">
+ <Creator>
+  <Name>Q Light Controller Plus</Name>
+  <Version>4.14.1</Version>
+  <Author>Magnus Herrlin</Author>
+ </Creator>
+ <Manufacturer>Magnus Herrlin</Manufacturer>
+ <Model>MakingFaces</Model>
+ <Type>Other</Type>
+ <Channel Name="Left Eye X" Preset="PositionPan"/>
+ <Channel Name="Left Eye Y" Preset="PositionTilt"/>
+ <Channel Name="Left Iris Size">
+  <Group Byte="0">Beam</Group>
+  <Capability Min="0" Max="255">Left Pupil Dilation</Capability>
+ </Channel>
+ <Channel Name="Left Blink">
+  <Group Byte="0">Shutter</Group>
+  <Capability Min="0" Max="9">Open</Capability>
+  <Capability Min="10" Max="249">Eyelid Closure</Capability>
+  <Capability Min="250" Max="255">Closed</Capability>
+ </Channel>
+ <Channel Name="Left Eye Style">
+  <Group Byte="0">Gobo</Group>
+  <Capability Min="0" Max="21">Default Sly</Capability>
+  <Capability Min="22" Max="42">Default Round</Capability>
+  <Capability Min="43" Max="63">Default Almond</Capability>
+  <Capability Min="64" Max="85">Dragon Sly</Capability>
+  <Capability Min="86" Max="106">Dragon Round</Capability>
+  <Capability Min="107" Max="127">Dragon Almond</Capability>
+  <Capability Min="128" Max="255">Lidless Modes (+128)</Capability>
+ </Channel>
+ <Channel Name="Left Eye Size">
+  <Group Byte="0">Beam</Group>
+  <Capability Min="0" Max="150">Normal Scale (75..152)</Capability>
+  <Capability Min="151" Max="255">3D Pop-Out Bulge</Capability>
+ </Channel>
+ <Channel Name="Right Eye X" Preset="PositionPan"/>
+ <Channel Name="Right Eye Y" Preset="PositionTilt"/>
+ <Channel Name="Right Iris Size">
+  <Group Byte="0">Beam</Group>
+  <Capability Min="0" Max="255">Right Pupil Dilation</Capability>
+ </Channel>
+ <Channel Name="Right Blink">
+  <Group Byte="0">Shutter</Group>
+  <Capability Min="0" Max="9">Open</Capability>
+  <Capability Min="10" Max="249">Eyelid Closure</Capability>
+  <Capability Min="250" Max="255">Closed</Capability>
+ </Channel>
+ <Channel Name="Right Eye Style">
+  <Group Byte="0">Gobo</Group>
+  <Capability Min="0" Max="21">Default Sly</Capability>
+  <Capability Min="22" Max="42">Default Round</Capability>
+  <Capability Min="43" Max="63">Default Almond</Capability>
+  <Capability Min="64" Max="85">Dragon Sly</Capability>
+  <Capability Min="86" Max="106">Dragon Round</Capability>
+  <Capability Min="107" Max="127">Dragon Almond</Capability>
+  <Capability Min="128" Max="255">Lidless Modes (+128)</Capability>
+ </Channel>
+ <Channel Name="Right Eye Size">
+  <Group Byte="0">Beam</Group>
+  <Capability Min="0" Max="150">Normal Scale (75..152)</Capability>
+  <Capability Min="151" Max="255">3D Pop-Out Bulge</Capability>
+ </Channel>
+ <Channel Name="Eye Convergence (Cross-Eye)">
+  <Group Byte="0">Effect</Group>
+  <Capability Min="0" Max="0">Neutral (No Offset)</Capability>
+  <Capability Min="1" Max="127">Wall-Eye (Diverge Outward)</Capability>
+  <Capability Min="128" Max="128">Neutral Center</Capability>
+  <Capability Min="129" Max="255">Cross-Eye (Converge Inward)</Capability>
+ </Channel>
+ <Channel Name="Eyebrow Tilt">
+  <Group Byte="0">Effect</Group>
+  <Capability Min="0" Max="127">Angry / Downward Tilt</Capability>
+  <Capability Min="128" Max="128">Neutral</Capability>
+  <Capability Min="129" Max="255">Sad / Surprised Upward Tilt</Capability>
+ </Channel>
+ <Channel Name="Eyebrow Mask">
+  <Group Byte="0">Gobo</Group>
+  <Capability Min="0" Max="0">Off</Capability>
+  <Capability Min="1" Max="255">Brow PNG 001..255</Capability>
+ </Channel>
+ <Channel Name="Mouth Gap">
+  <Group Byte="0">Effect</Group>
+  <Capability Min="0" Max="255">Closed to Wide Open</Capability>
+ </Channel>
+ <Channel Name="Mouth Smile / Frown">
+  <Group Byte="0">Effect</Group>
+  <Capability Min="0" Max="127">Frown</Capability>
+  <Capability Min="128" Max="128">Neutral</Capability>
+  <Capability Min="129" Max="255">Smile</Capability>
+ </Channel>
+ <Channel Name="Mouth Width">
+  <Group Byte="0">Effect</Group>
+  <Capability Min="0" Max="255">Narrow Pucker to Wide</Capability>
+ </Channel>
+ <Channel Name="Teeth Preset">
+  <Group Byte="0">Gobo</Group>
+  <Capability Min="0" Max="15">0: None</Capability>
+  <Capability Min="16" Max="31">1: Normal</Capability>
+  <Capability Min="32" Max="47">2: Mater Buck Teeth</Capability>
+  <Capability Min="48" Max="63">3: Dracula Fangs</Capability>
+  <Capability Min="64" Max="79">4: Pirate Gold Tooth</Capability>
+  <Capability Min="80" Max="95">5: Shark Teeth</Capability>
+  <Capability Min="96" Max="111">6: Bunny Teeth</Capability>
+  <Capability Min="112" Max="127">7: Gap Tooth</Capability>
+  <Capability Min="128" Max="143">8: Orc Tusks</Capability>
+  <Capability Min="144" Max="159">9: Underbite</Capability>
+  <Capability Min="160" Max="175">10: Vampire Quad Fangs</Capability>
+  <Capability Min="176" Max="191">11: Gold Grillz</Capability>
+  <Capability Min="192" Max="207">12: Diamond Grillz</Capability>
+  <Capability Min="208" Max="223">13: Jack-O-Lantern</Capability>
+  <Capability Min="224" Max="239">14: Braces</Capability>
+  <Capability Min="240" Max="255">15: Zombie Teeth</Capability>
+ </Channel>
+ <Channel Name="Mouth Tongue / Lick">
+  <Group Byte="0">Effect</Group>
+  <Capability Min="0" Max="1">Hidden</Capability>
+  <Capability Min="2" Max="160">Protruding 3D Tongue</Capability>
+  <Capability Min="161" Max="208">Upper Lip Lick Sweep</Capability>
+  <Capability Min="209" Max="255">Lower Lip Lick Sweep</Capability>
+ </Channel>
+ <Channel Name="Lip Thickness">
+  <Group Byte="0">Effect</Group>
+  <Capability Min="0" Max="254">Thin to Full Lips</Capability>
+  <Capability Min="255" Max="255">Hide Procedural Mouth</Capability>
+ </Channel>
+ <Channel Name="Lipstick Color">
+  <Group Byte="0">Colour</Group>
+  <Capability Min="0" Max="0">0: Default Classic Red</Capability>
+  <Capability Min="1" Max="28">1: Soft Pink</Capability>
+  <Capability Min="29" Max="56">2: Rose</Capability>
+  <Capability Min="57" Max="84">3: Classic Red</Capability>
+  <Capability Min="85" Max="113">4: Crimson</Capability>
+  <Capability Min="114" Max="141">5: Plum</Capability>
+  <Capability Min="142" Max="169">6: Coral</Capability>
+  <Capability Min="170" Max="198">7: Gothic Black</Capability>
+  <Capability Min="199" Max="226">8: Electric Blue</Capability>
+  <Capability Min="227" Max="255">9: Metallic Gold</Capability>
+ </Channel>
+ <Channel Name="Face Mask">
+  <Group Byte="0">Gobo</Group>
+  <Capability Min="0" Max="0">Off</Capability>
+  <Capability Min="1" Max="126">Front Face 001..126</Capability>
+  <Capability Min="127" Max="255">Side Profile 127..255</Capability>
+ </Channel>
+ <Channel Name="Ears Mask">
+  <Group Byte="0">Gobo</Group>
+  <Capability Min="0" Max="0">Off</Capability>
+  <Capability Min="1" Max="255">Ears PNG 001..255</Capability>
+ </Channel>
+ <Channel Name="Nose Mask">
+  <Group Byte="0">Gobo</Group>
+  <Capability Min="0" Max="0">Off</Capability>
+  <Capability Min="1" Max="255">Nose PNG 001..255</Capability>
+ </Channel>
+ <Channel Name="Beard / Jaw Mask">
+  <Group Byte="0">Gobo</Group>
+  <Capability Min="0" Max="0">Off</Capability>
+  <Capability Min="1" Max="96">Beard PNG 001..096</Capability>
+  <Capability Min="97" Max="108">Articulated Jaw 097..108</Capability>
+  <Capability Min="109" Max="255">Profile Beard 109..255</Capability>
+ </Channel>
+ <Channel Name="Glasses Mask">
+  <Group Byte="0">Gobo</Group>
+  <Capability Min="0" Max="0">Off</Capability>
+  <Capability Min="1" Max="255">Glasses PNG 001..255</Capability>
+ </Channel>
+ <Channel Name="Hair Mask">
+  <Group Byte="0">Gobo</Group>
+  <Capability Min="0" Max="0">Off</Capability>
+  <Capability Min="1" Max="255">Hair PNG 001..255</Capability>
+ </Channel>
+ <Channel Name="Hat / Headwear Mask">
+  <Group Byte="0">Gobo</Group>
+  <Capability Min="0" Max="0">Off</Capability>
+  <Capability Min="1" Max="255">Hat PNG 001..255</Capability>
+ </Channel>
+ <Channel Name="Makeup / Paint Mask">
+  <Group Byte="0">Gobo</Group>
+  <Capability Min="0" Max="0">Off</Capability>
+  <Capability Min="1" Max="255">Makeup PNG 001..255</Capability>
+ </Channel>
+ <Channel Name="Eyelash Style">
+  <Group Byte="0">Effect</Group>
+  <Capability Min="0" Max="0">None</Capability>
+  <Capability Min="1" Max="15">Eyelash Preset 01..15</Capability>
+  <Capability Min="16" Max="255">Eyelash Range</Capability>
+ </Channel>
+ <Channel Name="Memory Recall / Hide">
+  <Group Byte="0">Maintenance</Group>
+  <Capability Min="0" Max="9">Manual DMX Control</Capability>
+  <Capability Min="10" Max="250">Memory Slot #000..#240 (Val - 10)</Capability>
+  <Capability Min="251" Max="251">Hide Mouth</Capability>
+  <Capability Min="252" Max="252">Hide Nose</Capability>
+  <Capability Min="253" Max="253">Hide Mouth + Nose</Capability>
+  <Capability Min="254" Max="254">Hide Mouth + Nose + Brows</Capability>
+  <Capability Min="255" Max="255">Hide Entire Face</Capability>
+ </Channel>
+ <Channel Name="Memory Control">
+  <Group Byte="0">Maintenance</Group>
+  <Capability Min="0" Max="99">Normal Playback</Capability>
+  <Capability Min="100" Max="199">Live Edit Overlay</Capability>
+  <Capability Min="200" Max="255">Hold to Save Memory to INI/ZIP</Capability>
+ </Channel>
+ <Channel Name="Background Scene">
+  <Group Byte="0">Gobo</Group>
+  <Capability Min="0" Max="0">Black / Off</Capability>
+  <Capability Min="1" Max="255">Background Scene 001..255</Capability>
+ </Channel>
+ <Channel Name="FX / Weather Overlay">
+  <Group Byte="0">Effect</Group>
+  <Capability Min="0" Max="0">Off</Capability>
+  <Capability Min="1" Max="1">1: Bat</Capability>
+  <Capability Min="2" Max="2">2: Fly</Capability>
+  <Capability Min="3" Max="3">3: Mosquito</Capability>
+  <Capability Min="4" Max="4">4: Bird</Capability>
+  <Capability Min="5" Max="5">5: Wasp</Capability>
+  <Capability Min="6" Max="6">6: Spider</Capability>
+  <Capability Min="7" Max="7">7: Butterfly</Capability>
+  <Capability Min="8" Max="8">8: UFO</Capability>
+  <Capability Min="9" Max="9">9: Cobweb</Capability>
+  <Capability Min="10" Max="10">10: Fog Back</Capability>
+  <Capability Min="11" Max="11">11: Ghost</Capability>
+  <Capability Min="12" Max="12">12: Snake</Capability>
+  <Capability Min="13" Max="13">13: Fire</Capability>
+  <Capability Min="14" Max="14">14: Lightning</Capability>
+  <Capability Min="15" Max="15">15: Mouse</Capability>
+  <Capability Min="16" Max="16">16: Stars</Capability>
+  <Capability Min="17" Max="17">17: Comets</Capability>
+  <Capability Min="18" Max="18">18: Aurora</Capability>
+  <Capability Min="19" Max="19">19: Rain</Capability>
+  <Capability Min="20" Max="20">20: Snowfall</Capability>
+  <Capability Min="21" Max="21">21: Fog Mid</Capability>
+  <Capability Min="22" Max="22">22: Fog Front</Capability>
+  <Capability Min="23" Max="23">23: All 3 Fog Layers</Capability>
+  <Capability Min="24" Max="255">FX Loop 1..20</Capability>
+ </Channel>
+ <Channel Name="Audio Track">
+  <Group Byte="0">Maintenance</Group>
+  <Capability Min="0" Max="0">None</Capability>
+  <Capability Min="1" Max="255">Track 001..255 (.wav/.mp3)</Capability>
+ </Channel>
+ <Channel Name="Audio Volume">
+  <Group Byte="0">Intensity</Group>
+  <Capability Min="0" Max="255">0% to 100% (Max 0.65 Gain)</Capability>
+ </Channel>
+ <Channel Name="Audio Trigger">
+  <Group Byte="0">Maintenance</Group>
+  <Capability Min="0" Max="127">Stop / Idle</Capability>
+  <Capability Min="128" Max="255">Trigger Track Playback</Capability>
+ </Channel>
+ <Channel Name="Master Dimmer" Preset="IntensityMasterDimmer">
+  <Group Byte="0">Intensity</Group>
+  <Capability Min="0" Max="0">Full Brightness (100%)</Capability>
+  <Capability Min="1" Max="254">Dimming (100% to 1%)</Capability>
+  <Capability Min="255" Max="255">Blackout (0%)</Capability>
+ </Channel>
+ <Mode Name="1-Channel Memory">
+  <Channel Number="0">Memory Recall / Hide</Channel>
+  <Physical>
+   <Bulb Type="LED" Lumens="0" ColourTemperature="0"/>
+   <Dimensions Weight="0" Width="600" Height="800" Depth="10"/>
+   <Lens Name="Other" DegreesMin="0" DegreesMax="0"/>
+   <Focus Type="Fixed" PanMax="0" TiltMax="0"/>
+   <Technical PowerConsumption="15" DmxConnector="Other"/>
+  </Physical>
+ </Mode>
+ <Mode Name="2-Channel Memory + Dimmer">
+  <Channel Number="0">Memory Recall / Hide</Channel>
+  <Channel Number="1">Master Dimmer</Channel>
+  <Physical>
+   <Bulb Type="LED" Lumens="0" ColourTemperature="0"/>
+   <Dimensions Weight="0" Width="600" Height="800" Depth="10"/>
+   <Lens Name="Other" DegreesMin="0" DegreesMax="0"/>
+   <Focus Type="Fixed" PanMax="0" TiltMax="0"/>
+   <Technical PowerConsumption="15" DmxConnector="Other"/>
+  </Physical>
+ </Mode>
+ <Mode Name="7-Channel Show">
+  <Channel Number="0">Memory Recall / Hide</Channel>
+  <Channel Number="1">Master Dimmer</Channel>
+  <Channel Number="2">Background Scene</Channel>
+  <Channel Number="3">FX / Weather Overlay</Channel>
+  <Channel Number="4">Audio Track</Channel>
+  <Channel Number="5">Audio Volume</Channel>
+  <Channel Number="6">Audio Trigger</Channel>
+  <Physical>
+   <Bulb Type="LED" Lumens="0" ColourTemperature="0"/>
+   <Dimensions Weight="0" Width="600" Height="800" Depth="10"/>
+   <Lens Name="Other" DegreesMin="0" DegreesMax="0"/>
+   <Focus Type="Fixed" PanMax="0" TiltMax="0"/>
+   <Technical PowerConsumption="15" DmxConnector="Other"/>
+  </Physical>
+ </Mode>
+ <Mode Name="39-Channel Full">
+  <Channel Number="0">Left Eye X</Channel>
+  <Channel Number="1">Left Eye Y</Channel>
+  <Channel Number="2">Left Iris Size</Channel>
+  <Channel Number="3">Left Blink</Channel>
+  <Channel Number="4">Left Eye Style</Channel>
+  <Channel Number="5">Left Eye Size</Channel>
+  <Channel Number="6">Right Eye X</Channel>
+  <Channel Number="7">Right Eye Y</Channel>
+  <Channel Number="8">Right Iris Size</Channel>
+  <Channel Number="9">Right Blink</Channel>
+  <Channel Number="10">Right Eye Style</Channel>
+  <Channel Number="11">Right Eye Size</Channel>
+  <Channel Number="12">Eye Convergence (Cross-Eye)</Channel>
+  <Channel Number="13">Eyebrow Tilt</Channel>
+  <Channel Number="14">Eyebrow Mask</Channel>
+  <Channel Number="15">Mouth Gap</Channel>
+  <Channel Number="16">Mouth Smile / Frown</Channel>
+  <Channel Number="17">Mouth Width</Channel>
+  <Channel Number="18">Teeth Preset</Channel>
+  <Channel Number="19">Mouth Tongue / Lick</Channel>
+  <Channel Number="20">Lip Thickness</Channel>
+  <Channel Number="21">Lipstick Color</Channel>
+  <Channel Number="22">Face Mask</Channel>
+  <Channel Number="23">Ears Mask</Channel>
+  <Channel Number="24">Nose Mask</Channel>
+  <Channel Number="25">Beard / Jaw Mask</Channel>
+  <Channel Number="26">Glasses Mask</Channel>
+  <Channel Number="27">Hair Mask</Channel>
+  <Channel Number="28">Hat / Headwear Mask</Channel>
+  <Channel Number="29">Makeup / Paint Mask</Channel>
+  <Channel Number="30">Eyelash Style</Channel>
+  <Channel Number="31">Memory Recall / Hide</Channel>
+  <Channel Number="32">Memory Control</Channel>
+  <Channel Number="33">Background Scene</Channel>
+  <Channel Number="34">FX / Weather Overlay</Channel>
+  <Channel Number="35">Audio Track</Channel>
+  <Channel Number="36">Audio Volume</Channel>
+  <Channel Number="37">Audio Trigger</Channel>
+  <Channel Number="38">Master Dimmer</Channel>
+  <Head>
+   <Channel>0</Channel>
+   <Channel>1</Channel>
+  </Head>
+  <Head>
+   <Channel>6</Channel>
+   <Channel>7</Channel>
+  </Head>
+  <Physical>
+   <Bulb Type="LED" Lumens="0" ColourTemperature="0"/>
+   <Dimensions Weight="0" Width="600" Height="800" Depth="10"/>
+   <Lens Name="Other" DegreesMin="0" DegreesMax="0"/>
+   <Focus Type="Fixed" PanMax="0" TiltMax="0"/>
+   <Technical PowerConsumption="15" DmxConnector="Other"/>
+  </Physical>
+ </Mode>
+</FixtureDefinition>

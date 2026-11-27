@@ -1,0 +1,16 @@
+# Binaries & build artifacts
+MakingFaces
+pack_default
+pack_monkeys
+pack_cats
+pack_halloween
+*.o
+
+# Runtime working folders & temporary files
+assets/
+makingfaces.ini
+import/
+packs/.undo_*.zip
+packs/.thumb_tmp/
+packs/.inspect_tmp/
+*.tmp

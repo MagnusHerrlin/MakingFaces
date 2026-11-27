@@ -1,0 +1,667 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Workspace>
+<Workspace xmlns="http://qlcplus.org" CurrentWindow="VirtualConsole">
+ <Creator><Name>Q Light Controller Plus</Name><Version>4.14.1</Version><Author>Magnus Herrlin</Author></Creator>
+ <Engine>
+  <InputOutputMap>
+   <Universe Name="Universe 1" ID="0">
+    <Output Plugin="E1.31" Line="0"/>
+   </Universe>
+  </InputOutputMap>
+  <Fixture>
+   <Manufacturer>Magnus Herrlin</Manufacturer>
+   <Model>MakingFaces</Model>
+   <Mode>39-Channel Full</Mode>
+   <ID>0</ID>
+   <Name>MakingFaces Head</Name>
+   <Universe>0</Universe>
+   <Address>0</Address>
+   <Channels>39</Channels>
+  </Fixture>
+  <Function ID="0" Type="Scene" Name="Auto Loop (DMX Idle)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,0</FixtureVal>
+  </Function>
+  <Function ID="1" Type="Scene" Name="Audio Play Trigger">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">37,255</FixtureVal>
+  </Function>
+  <Function ID="2" Type="Scene" Name="FX Fire Overlay">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">34,13</FixtureVal>
+  </Function>
+  <Function ID="3" Type="Scene" Name="FX All Fog Layers">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">34,23</FixtureVal>
+  </Function>
+  <Function ID="4" Type="Scene" Name="Memory #000 (SLY LICK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,10</FixtureVal>
+  </Function>
+  <Function ID="5" Type="Scene" Name="Memory #001 (COCKY ROGUE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,11</FixtureVal>
+  </Function>
+  <Function ID="6" Type="Scene" Name="Memory #002 (DREAMY GAZE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,12</FixtureVal>
+  </Function>
+  <Function ID="7" Type="Scene" Name="Memory #003 (FLIRTY WINK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,13</FixtureVal>
+  </Function>
+  <Function ID="8" Type="Scene" Name="Memory #004 (FUNKY GROOVE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,14</FixtureVal>
+  </Function>
+  <Function ID="9" Type="Scene" Name="Memory #005 (CHATTY TALKER)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,15</FixtureVal>
+  </Function>
+  <Function ID="10" Type="Scene" Name="Memory #006 (SUPERHERO POSE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,16</FixtureVal>
+  </Function>
+  <Function ID="11" Type="Scene" Name="Memory #007 (SHIVERING COLD)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,17</FixtureVal>
+  </Function>
+  <Function ID="12" Type="Scene" Name="Memory #008 (KING ROYAL)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,18</FixtureVal>
+  </Function>
+  <Function ID="13" Type="Scene" Name="Memory #009 (NERDY BLINK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,19</FixtureVal>
+  </Function>
+  <Function ID="14" Type="Scene" Name="Memory #010 (SLY LICK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,20</FixtureVal>
+  </Function>
+  <Function ID="15" Type="Scene" Name="Memory #011 (SLY LICK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,21</FixtureVal>
+  </Function>
+  <Function ID="16" Type="Scene" Name="Memory #012 (SLY LICK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,22</FixtureVal>
+  </Function>
+  <Function ID="17" Type="Scene" Name="Memory #013 (SLY LICK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,23</FixtureVal>
+  </Function>
+  <Function ID="18" Type="Scene" Name="Memory #014 (SLY LICK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,24</FixtureVal>
+  </Function>
+  <Function ID="19" Type="Scene" Name="Memory #015 (COCKY ROGUE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,25</FixtureVal>
+  </Function>
+  <Function ID="20" Type="Scene" Name="Memory #016 (COCKY ROGUE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,26</FixtureVal>
+  </Function>
+  <Function ID="21" Type="Scene" Name="Memory #017 (COCKY ROGUE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,27</FixtureVal>
+  </Function>
+  <Function ID="22" Type="Scene" Name="Memory #018 (COCKY ROGUE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,28</FixtureVal>
+  </Function>
+  <Function ID="23" Type="Scene" Name="Memory #019 (COCKY ROGUE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,29</FixtureVal>
+  </Function>
+  <Function ID="24" Type="Scene" Name="Memory #020 (DREAMY GAZE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,30</FixtureVal>
+  </Function>
+  <Function ID="25" Type="Scene" Name="Memory #021 (DREAMY GAZE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,31</FixtureVal>
+  </Function>
+  <Function ID="26" Type="Scene" Name="Memory #022 (DREAMY GAZE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,32</FixtureVal>
+  </Function>
+  <Function ID="27" Type="Scene" Name="Memory #023 (DREAMY GAZE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,33</FixtureVal>
+  </Function>
+  <Function ID="28" Type="Scene" Name="Memory #024 (DREAMY GAZE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,34</FixtureVal>
+  </Function>
+  <Function ID="29" Type="Scene" Name="Memory #025 (FLIRTY WINK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,35</FixtureVal>
+  </Function>
+  <Function ID="30" Type="Scene" Name="Memory #026 (FLIRTY WINK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,36</FixtureVal>
+  </Function>
+  <Function ID="31" Type="Scene" Name="Memory #027 (FLIRTY WINK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,37</FixtureVal>
+  </Function>
+  <Function ID="32" Type="Scene" Name="Memory #028 (FLIRTY WINK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,38</FixtureVal>
+  </Function>
+  <Function ID="33" Type="Scene" Name="Memory #029 (FLIRTY WINK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,39</FixtureVal>
+  </Function>
+  <Function ID="34" Type="Scene" Name="Memory #030 (FUNKY GROOVE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,40</FixtureVal>
+  </Function>
+  <Function ID="35" Type="Scene" Name="Memory #031 (FUNKY GROOVE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,41</FixtureVal>
+  </Function>
+  <Function ID="36" Type="Scene" Name="Memory #032 (FUNKY GROOVE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,42</FixtureVal>
+  </Function>
+  <Function ID="37" Type="Scene" Name="Memory #033 (FUNKY GROOVE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,43</FixtureVal>
+  </Function>
+  <Function ID="38" Type="Scene" Name="Memory #034 (FUNKY GROOVE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,44</FixtureVal>
+  </Function>
+  <Function ID="39" Type="Scene" Name="Memory #035 (CHATTY TALKER)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,45</FixtureVal>
+  </Function>
+  <Function ID="40" Type="Scene" Name="Memory #036 (CHATTY TALKER)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,46</FixtureVal>
+  </Function>
+  <Function ID="41" Type="Scene" Name="Memory #037 (CHATTY TALKER)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,47</FixtureVal>
+  </Function>
+  <Function ID="42" Type="Scene" Name="Memory #038 (CHATTY TALKER)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,48</FixtureVal>
+  </Function>
+  <Function ID="43" Type="Scene" Name="Memory #039 (CHATTY TALKER)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,49</FixtureVal>
+  </Function>
+  <Function ID="44" Type="Scene" Name="Memory #040 (SUPERHERO POSE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,50</FixtureVal>
+  </Function>
+  <Function ID="45" Type="Scene" Name="Memory #041 (SUPERHERO POSE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,51</FixtureVal>
+  </Function>
+  <Function ID="46" Type="Scene" Name="Memory #042 (SUPERHERO POSE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,52</FixtureVal>
+  </Function>
+  <Function ID="47" Type="Scene" Name="Memory #043 (SUPERHERO POSE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,53</FixtureVal>
+  </Function>
+  <Function ID="48" Type="Scene" Name="Memory #044 (SUPERHERO POSE)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,54</FixtureVal>
+  </Function>
+  <Function ID="49" Type="Scene" Name="Memory #045 (SHIVERING COLD)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,55</FixtureVal>
+  </Function>
+  <Function ID="50" Type="Scene" Name="Memory #046 (SHIVERING COLD)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,56</FixtureVal>
+  </Function>
+  <Function ID="51" Type="Scene" Name="Memory #047 (SHIVERING COLD)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,57</FixtureVal>
+  </Function>
+  <Function ID="52" Type="Scene" Name="Memory #048 (SHIVERING COLD)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,58</FixtureVal>
+  </Function>
+  <Function ID="53" Type="Scene" Name="Memory #049 (SHIVERING COLD)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,59</FixtureVal>
+  </Function>
+  <Function ID="54" Type="Scene" Name="Memory #050 (KING ROYAL)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,60</FixtureVal>
+  </Function>
+  <Function ID="55" Type="Scene" Name="Memory #051 (KING ROYAL)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,61</FixtureVal>
+  </Function>
+  <Function ID="56" Type="Scene" Name="Memory #052 (KING ROYAL)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,62</FixtureVal>
+  </Function>
+  <Function ID="57" Type="Scene" Name="Memory #053 (KING ROYAL)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,63</FixtureVal>
+  </Function>
+  <Function ID="58" Type="Scene" Name="Memory #054 (KING ROYAL)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,64</FixtureVal>
+  </Function>
+  <Function ID="59" Type="Scene" Name="Memory #055 (NERDY BLINK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,65</FixtureVal>
+  </Function>
+  <Function ID="60" Type="Scene" Name="Memory #056 (NERDY BLINK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,66</FixtureVal>
+  </Function>
+  <Function ID="61" Type="Scene" Name="Memory #057 (NERDY BLINK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,67</FixtureVal>
+  </Function>
+  <Function ID="62" Type="Scene" Name="Memory #058 (NERDY BLINK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,68</FixtureVal>
+  </Function>
+  <Function ID="63" Type="Scene" Name="Memory #059 (NERDY BLINK)">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">31,69</FixtureVal>
+  </Function>
+ </Engine>
+ <VirtualConsole>
+  <Frame Caption="MakingFaces Show Control">
+   <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+   <WindowState Visible="True" X="0" Y="0" Width="1385" Height="698"/>
+   <XYPad Caption="Left Eye" ID="0" InvertedAppearance="false">
+    <WindowState Visible="True" X="12" Y="32" Width="168" Height="168"/>
+    <Appearance><FrameStyle>Sunken</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+    <Fixture ID="0" Head="0"><Axis ID="X" LowLimit="0" HighLimit="255" Reverse="False"/><Axis ID="Y" LowLimit="0" HighLimit="255" Reverse="False"/></Fixture>
+    <Channel Fixture="0">0</Channel>
+    <Channel Fixture="0">1</Channel>
+    <Pan Position="128"/><Tilt Position="128"/>
+   </XYPad>
+   <XYPad Caption="Right Eye" ID="1" InvertedAppearance="false">
+    <WindowState Visible="True" X="186" Y="32" Width="168" Height="168"/>
+    <Appearance><FrameStyle>Sunken</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+    <Fixture ID="0" Head="0"><Axis ID="X" LowLimit="0" HighLimit="255" Reverse="False"/><Axis ID="Y" LowLimit="0" HighLimit="255" Reverse="False"/></Fixture>
+    <Channel Fixture="0">6</Channel>
+    <Channel Fixture="0">7</Channel>
+    <Pan Position="128"/><Tilt Position="128"/>
+   </XYPad>
+   <Slider Caption="Skelning" ID="2" WidgetStyle="Slider" InvertedAppearance="false">
+    <WindowState Visible="True" X="12" Y="208" Width="342" Height="60"/>
+    <Appearance><FrameStyle>Sunken</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+    <SliderMode ValueDisplayStyle="Exact" ClickAndGoType="None" Monitor="false">Level</SliderMode>
+    <Level LowLimit="0" HighLimit="255" Value="128"><Channel Fixture="0">12</Channel></Level>
+   </Slider>
+   <Slider Caption="Dimmer" ID="3" WidgetStyle="Slider" InvertedAppearance="false">
+    <WindowState Visible="True" X="364" Y="32" Width="52" Height="195"/>
+    <Appearance><FrameStyle>Sunken</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+    <SliderMode ValueDisplayStyle="Exact" ClickAndGoType="None" Monitor="false">Level</SliderMode>
+    <Level LowLimit="0" HighLimit="255" Value="0"><Channel Fixture="0">38</Channel></Level>
+   </Slider>
+   <Slider Caption="Mouth" ID="4" WidgetStyle="Slider" InvertedAppearance="false">
+    <WindowState Visible="True" X="420" Y="32" Width="52" Height="195"/>
+    <Appearance><FrameStyle>Sunken</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+    <SliderMode ValueDisplayStyle="Exact" ClickAndGoType="None" Monitor="false">Level</SliderMode>
+    <Level LowLimit="0" HighLimit="255" Value="0"><Channel Fixture="0">15</Channel></Level>
+   </Slider>
+   <Slider Caption="Pupil" ID="5" WidgetStyle="Slider" InvertedAppearance="false">
+    <WindowState Visible="True" X="476" Y="32" Width="52" Height="195"/>
+    <Appearance><FrameStyle>Sunken</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+    <SliderMode ValueDisplayStyle="Exact" ClickAndGoType="None" Monitor="false">Level</SliderMode>
+    <Level LowLimit="0" HighLimit="255" Value="128"><Channel Fixture="0">2</Channel></Level>
+   </Slider>
+   <Slider Caption="Mood" ID="6" WidgetStyle="Slider" InvertedAppearance="false">
+    <WindowState Visible="True" X="364" Y="234" Width="52" Height="195"/>
+    <Appearance><FrameStyle>Sunken</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+    <SliderMode ValueDisplayStyle="Exact" ClickAndGoType="None" Monitor="false">Level</SliderMode>
+    <Level LowLimit="0" HighLimit="255" Value="128"><Channel Fixture="0">16</Channel></Level>
+   </Slider>
+   <Slider Caption="Track" ID="7" WidgetStyle="Slider" InvertedAppearance="false">
+    <WindowState Visible="True" X="420" Y="234" Width="52" Height="195"/>
+    <Appearance><FrameStyle>Sunken</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+    <SliderMode ValueDisplayStyle="Exact" ClickAndGoType="None" Monitor="false">Level</SliderMode>
+    <Level LowLimit="0" HighLimit="255" Value="0"><Channel Fixture="0">35</Channel></Level>
+   </Slider>
+   <Slider Caption="Volume" ID="8" WidgetStyle="Slider" InvertedAppearance="false">
+    <WindowState Visible="True" X="476" Y="234" Width="52" Height="195"/>
+    <Appearance><FrameStyle>Sunken</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+    <SliderMode ValueDisplayStyle="Exact" ClickAndGoType="None" Monitor="false">Level</SliderMode>
+    <Level LowLimit="0" HighLimit="255" Value="200"><Channel Fixture="0">36</Channel></Level>
+   </Slider>
+   <Button Caption="PLAY AUDIO" ID="9" Icon="">
+    <WindowState Visible="True" X="12" Y="278" Width="108" Height="52"/>
+    <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+    <Function ID="1"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+   </Button>
+   <Button Caption="FX FIRE" ID="10" Icon="">
+    <WindowState Visible="True" X="128" Y="278" Width="108" Height="52"/>
+    <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+    <Function ID="2"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+   </Button>
+   <Button Caption="FX FOG" ID="11" Icon="">
+    <WindowState Visible="True" X="244" Y="278" Width="108" Height="52"/>
+    <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+    <Function ID="3"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+   </Button>
+   <SoloFrame Caption="Memories (Active Slot)" ID="12">
+    <Appearance><FrameStyle>Sunken</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+    <WindowState Visible="True" X="552" Y="32" Width="821" Height="662"/>
+    <AllowChildren>True</AllowChildren><AllowResize>True</AllowResize><ShowHeader>True</ShowHeader><ShowEnableButton>True</ShowEnableButton><Collapsed>False</Collapsed><Disabled>False</Disabled>
+    <Button Caption="AUTO LOOP" ID="13" Icon="">
+     <WindowState Visible="True" X="8" Y="32" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="0"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#000 SLY LICK" ID="14" Icon="">
+     <WindowState Visible="True" X="169" Y="32" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="4"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#001 COCKY ROGUE" ID="15" Icon="">
+     <WindowState Visible="True" X="330" Y="32" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="5"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#002 DREAMY GAZE" ID="16" Icon="">
+     <WindowState Visible="True" X="491" Y="32" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="6"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#003 FLIRTY WINK" ID="17" Icon="">
+     <WindowState Visible="True" X="652" Y="32" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="7"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#004 FUNKY GROOVE" ID="18" Icon="">
+     <WindowState Visible="True" X="8" Y="80" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="8"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#005 CHATTY TALKER" ID="19" Icon="">
+     <WindowState Visible="True" X="169" Y="80" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="9"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#006 SUPERHERO POSE" ID="20" Icon="">
+     <WindowState Visible="True" X="330" Y="80" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="10"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#007 SHIVERING COLD" ID="21" Icon="">
+     <WindowState Visible="True" X="491" Y="80" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="11"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#008 KING ROYAL" ID="22" Icon="">
+     <WindowState Visible="True" X="652" Y="80" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="12"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#009 NERDY BLINK" ID="23" Icon="">
+     <WindowState Visible="True" X="8" Y="128" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="13"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#010 SLY LICK" ID="24" Icon="">
+     <WindowState Visible="True" X="169" Y="128" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="14"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#011 SLY LICK" ID="25" Icon="">
+     <WindowState Visible="True" X="330" Y="128" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="15"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#012 SLY LICK" ID="26" Icon="">
+     <WindowState Visible="True" X="491" Y="128" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="16"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#013 SLY LICK" ID="27" Icon="">
+     <WindowState Visible="True" X="652" Y="128" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="17"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#014 SLY LICK" ID="28" Icon="">
+     <WindowState Visible="True" X="8" Y="176" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="18"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#015 COCKY ROGUE" ID="29" Icon="">
+     <WindowState Visible="True" X="169" Y="176" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="19"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#016 COCKY ROGUE" ID="30" Icon="">
+     <WindowState Visible="True" X="330" Y="176" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="20"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#017 COCKY ROGUE" ID="31" Icon="">
+     <WindowState Visible="True" X="491" Y="176" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="21"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#018 COCKY ROGUE" ID="32" Icon="">
+     <WindowState Visible="True" X="652" Y="176" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="22"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#019 COCKY ROGUE" ID="33" Icon="">
+     <WindowState Visible="True" X="8" Y="224" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="23"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#020 DREAMY GAZE" ID="34" Icon="">
+     <WindowState Visible="True" X="169" Y="224" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="24"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#021 DREAMY GAZE" ID="35" Icon="">
+     <WindowState Visible="True" X="330" Y="224" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="25"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#022 DREAMY GAZE" ID="36" Icon="">
+     <WindowState Visible="True" X="491" Y="224" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="26"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#023 DREAMY GAZE" ID="37" Icon="">
+     <WindowState Visible="True" X="652" Y="224" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="27"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#024 DREAMY GAZE" ID="38" Icon="">
+     <WindowState Visible="True" X="8" Y="272" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="28"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#025 FLIRTY WINK" ID="39" Icon="">
+     <WindowState Visible="True" X="169" Y="272" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="29"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#026 FLIRTY WINK" ID="40" Icon="">
+     <WindowState Visible="True" X="330" Y="272" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="30"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#027 FLIRTY WINK" ID="41" Icon="">
+     <WindowState Visible="True" X="491" Y="272" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="31"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#028 FLIRTY WINK" ID="42" Icon="">
+     <WindowState Visible="True" X="652" Y="272" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="32"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#029 FLIRTY WINK" ID="43" Icon="">
+     <WindowState Visible="True" X="8" Y="320" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="33"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#030 FUNKY GROOVE" ID="44" Icon="">
+     <WindowState Visible="True" X="169" Y="320" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="34"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#031 FUNKY GROOVE" ID="45" Icon="">
+     <WindowState Visible="True" X="330" Y="320" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="35"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#032 FUNKY GROOVE" ID="46" Icon="">
+     <WindowState Visible="True" X="491" Y="320" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="36"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#033 FUNKY GROOVE" ID="47" Icon="">
+     <WindowState Visible="True" X="652" Y="320" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="37"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#034 FUNKY GROOVE" ID="48" Icon="">
+     <WindowState Visible="True" X="8" Y="368" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="38"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#035 CHATTY TALKER" ID="49" Icon="">
+     <WindowState Visible="True" X="169" Y="368" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="39"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#036 CHATTY TALKER" ID="50" Icon="">
+     <WindowState Visible="True" X="330" Y="368" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="40"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#037 CHATTY TALKER" ID="51" Icon="">
+     <WindowState Visible="True" X="491" Y="368" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="41"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#038 CHATTY TALKER" ID="52" Icon="">
+     <WindowState Visible="True" X="652" Y="368" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="42"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#039 CHATTY TALKER" ID="53" Icon="">
+     <WindowState Visible="True" X="8" Y="416" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="43"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#040 SUPERHERO POSE" ID="54" Icon="">
+     <WindowState Visible="True" X="169" Y="416" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="44"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#041 SUPERHERO POSE" ID="55" Icon="">
+     <WindowState Visible="True" X="330" Y="416" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="45"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#042 SUPERHERO POSE" ID="56" Icon="">
+     <WindowState Visible="True" X="491" Y="416" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="46"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#043 SUPERHERO POSE" ID="57" Icon="">
+     <WindowState Visible="True" X="652" Y="416" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="47"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#044 SUPERHERO POSE" ID="58" Icon="">
+     <WindowState Visible="True" X="8" Y="464" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="48"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#045 SHIVERING COLD" ID="59" Icon="">
+     <WindowState Visible="True" X="169" Y="464" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="49"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#046 SHIVERING COLD" ID="60" Icon="">
+     <WindowState Visible="True" X="330" Y="464" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="50"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#047 SHIVERING COLD" ID="61" Icon="">
+     <WindowState Visible="True" X="491" Y="464" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="51"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#048 SHIVERING COLD" ID="62" Icon="">
+     <WindowState Visible="True" X="652" Y="464" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="52"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#049 SHIVERING COLD" ID="63" Icon="">
+     <WindowState Visible="True" X="8" Y="512" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="53"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#050 KING ROYAL" ID="64" Icon="">
+     <WindowState Visible="True" X="169" Y="512" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="54"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#051 KING ROYAL" ID="65" Icon="">
+     <WindowState Visible="True" X="330" Y="512" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="55"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#052 KING ROYAL" ID="66" Icon="">
+     <WindowState Visible="True" X="491" Y="512" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="56"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#053 KING ROYAL" ID="67" Icon="">
+     <WindowState Visible="True" X="652" Y="512" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="57"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#054 KING ROYAL" ID="68" Icon="">
+     <WindowState Visible="True" X="8" Y="560" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="58"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#055 NERDY BLINK" ID="69" Icon="">
+     <WindowState Visible="True" X="169" Y="560" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="59"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#056 NERDY BLINK" ID="70" Icon="">
+     <WindowState Visible="True" X="330" Y="560" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="60"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#057 NERDY BLINK" ID="71" Icon="">
+     <WindowState Visible="True" X="491" Y="560" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="61"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#058 NERDY BLINK" ID="72" Icon="">
+     <WindowState Visible="True" X="652" Y="560" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="62"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+    <Button Caption="#059 NERDY BLINK" ID="73" Icon="">
+     <WindowState Visible="True" X="8" Y="608" Width="155" Height="42"/>
+     <Appearance><FrameStyle>None</FrameStyle><ForegroundColor>Default</ForegroundColor><BackgroundColor>Default</BackgroundColor></Appearance>
+     <Function ID="63"/><Action>Toggle</Action><Intensity Adjust="False">100</Intensity>
+    </Button>
+   </SoloFrame>
+  </Frame>
+ </VirtualConsole>
+</Workspace>
