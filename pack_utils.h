@@ -33,6 +33,30 @@ struct PackMacroSpec {
     int  eye_bank     = -1;
 };
 
+struct ProfileThemeSpec {
+    const char* skinHi;
+    const char* skinMid;
+    const char* skinDeep;
+    const char* muzzleHi;
+    const char* muzzleMid;
+    const char* muzzleDeep;
+    const char* hairDeep;
+    const char* hairDark;
+    const char* hairMid;
+    int         earR       = 46;
+    int         bgScene    = 1;
+    int         teeth      = 1;
+    int         lipColor   = 3;
+    int         eyelash    = 0;
+    int         eyeStyle   = -1;
+    int         animId     = 16;
+    int         eyeBank    = -1;
+    bool        useMakeup  = false;
+    bool        useBeard   = true;
+    bool        useGlasses = false;
+    bool        useHat     = false;
+};
+
 // Safe 7-bit ASCII XML/SVG tag builders
 std::string svgTag(const std::string& tag, const std::string& attrs = "", bool selfClose = true);
 std::string svgClose(const std::string& tag);
@@ -51,6 +75,7 @@ void appendFaceOffsets(int faceId, const std::map<std::string, std::string>& kv,
 void appendMacroCombo(const PackMacroSpec& m, const std::string& iniPath = "makingfaces.ini");
 void generateDefaultBrowsBank(void);
 void generateDefaultFxBank(void);
+void generateStandardSideProfileSuite(const std::vector<ProfileThemeSpec>& themes, int variantsPerTheme = 5, const std::string& iniPath = "makingfaces.ini");
 void cleanSvgAndSaveZip(const std::string& packName, const std::string& packsDir = "packs");
 
 // 3D Side-profile primitive builders (127+ left & right profiles)

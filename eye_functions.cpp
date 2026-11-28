@@ -1149,8 +1149,17 @@ void renderSingleEyeNormalized(uint8_t e, uint8_t rawX, uint8_t rawY, uint8_t ra
   }
 
   if (g_critter_gaze_active.load(std::memory_order_relaxed)) {
-    rawX = g_critter_gaze_x.load(std::memory_order_relaxed);
-    rawY = g_critter_gaze_y.load(std::memory_order_relaxed);
+    int gx   = static_cast<int>(g_critter_gaze_x.load(std::memory_order_relaxed));
+    int gy   = static_cast<int>(g_critter_gaze_y.load(std::memory_order_relaxed));
+    int conv = static_cast<int>(g_critter_gaze_converge.load(std::memory_order_relaxed));
+    if (conv > 0) {
+      float crossT = std::min(1.0f, static_cast<float>(conv) / 112.0f);
+      int targetInwardX = (e == 0) ? 255 : 0;
+      gx = static_cast<int>(std::round(static_cast<float>(gx) * (1.0f - crossT) + static_cast<float>(targetInwardX) * crossT));
+      gy = std::max(0, gy - static_cast<int>(std::round(36.0f * crossT)));
+    }
+    rawX = static_cast<uint8_t>(std::max(0, std::min(255, gx)));
+    rawY = static_cast<uint8_t>(std::max(0, std::min(255, gy)));
   }
 
   bool popped     = (rawSize >= EYE_POPOUT_RAW_MIN);

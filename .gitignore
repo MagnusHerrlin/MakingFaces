@@ -14,3 +14,15 @@ packs/.undo_*.zip
 packs/.thumb_tmp/
 packs/.inspect_tmp/
 *.tmp
+*.o
+MakingFaces
+pack_cats
+pack_monkeys
+pack_halloween
+pack_people
+pack_misc
+pack_fx
+packs/*.zip
+packs/.undo_*.zip
+assets/
+makingfaces.ini

@@ -136,8 +136,15 @@ struct MaskOffsetProfile {
 
 struct FxSpriteBank {
     std::array<SDL_Texture*, 17> sprites{};
+    std::array<SDL_Texture*, 17> animSprites{};
     std::array<SDL_Texture*, 17> blurSprites{};
-    SDL_Texture*                 fog2 = nullptr;
+    SDL_Texture*                 bat3            = nullptr;
+    SDL_Texture*                 fog2            = nullptr;
+    SDL_Texture*                 leafTex         = nullptr;
+    SDL_Texture*                 snowflakeTex    = nullptr;
+    std::array<SDL_Texture*, 2>  fireflyTex{};
+    std::array<SDL_Texture*, 2>  grasshopperTex{};
+    std::array<SDL_Texture*, 2>  antTex{};
 };
 
 struct MemoryPreset {
@@ -405,7 +412,6 @@ struct AppRuntimeState {
     int      curEyelash          = -1;
     int      curEyeStyle         = -1;
 };
-
 #include "tft_compat.h"
 
 #ifndef DEBUG_PRINTF
@@ -458,6 +464,7 @@ extern std::atomic<float>       g_mouth_scale_factor_right;
 extern std::atomic<bool>        g_critter_gaze_active;
 extern std::atomic<uint8_t>     g_critter_gaze_x;
 extern std::atomic<uint8_t>     g_critter_gaze_y;
+extern std::atomic<uint8_t>     g_critter_gaze_converge;
 extern std::atomic<uint8_t>     g_brow_left_tilt;
 extern std::atomic<uint8_t>     g_brow_right_tilt;
 extern std::atomic<uint8_t>     g_effective_mouth_gap;

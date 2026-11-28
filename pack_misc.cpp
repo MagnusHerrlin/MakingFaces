@@ -493,7 +493,7 @@ static void genAllGlassesHatsMakeupAndBg(void)
 
 int main(void)
 {
-    std::cout << "=== Generating MakingFaces Misc Pack (241 Memories + All 3D Asset Banks) ===\n";
+    std::cout << "=== Generating MakingFaces Misc Pack (191 Front + 50 Side-Profile Pairs) ===\n";
     ensureBaseIni("makingfaces.ini");
     generateDefaultFxBank();
     genAllFaces();
@@ -517,8 +517,8 @@ int main(void)
         (1u << 19)  // Snow
     };
 
-    for (int slot = 0; slot <= 240; ++slot) {
-        int faceId   = 1 + (slot % 128);
+    for (int slot = 0; slot <= 190; ++slot) {
+        int faceId   = 1 + (slot % 126);
         int mkpId    = (slot % 3 == 0) ? (1 + (slot % 104)) : 0;
         int earId    = 1 + (slot % 88);
         int noseId   = 1 + (slot % 95);
@@ -541,7 +541,20 @@ int main(void)
         });
     }
 
+    std::vector<ProfileThemeSpec> profThemes;
+    for (int i = 0; i < 10; ++i) {
+        const auto& sk = kSkinPals.at(static_cast<size_t>(i) % kSkinPals.size());
+        const auto& hr = kHairPals.at(static_cast<size_t>(i) % kHairPals.size());
+        profThemes.push_back({
+            sk.hi, sk.mid, sk.deep, sk.hi, sk.mid, sk.deep,
+            hr.deep, hr.dark, hr.mid,
+            45, 1 + (i % 8), (i % 16), (i % 10), (i % 3 == 0) ? 6 : 0, -1, 16 + (i * 4), 0,
+            (i % 2 == 0), (i % 2 == 1), (i % 3 == 1), (i % 2 == 0)
+        });
+    }
+    generateStandardSideProfileSuite(profThemes, 5);
+
     cleanSvgAndSaveZip("misc", "packs");
-    std::cout << "[OK] Created packs/misc.zip with 241 Memories!\n";
+    std::cout << "[OK] Created packs/misc.zip with 191 Front + 50 Side-Profile Pairs (241 Total)!\n";
     return 0;
 }

@@ -16,7 +16,7 @@
 - **Ctrl+P:** Open Live Camera & USB Microscope Viewfinder
 - **Ctrl+E:** Export complete QLC+ `.qxw` show & virtual console workspace (`MakingFaces-Show.qxw`)
 - **Ctrl+X:** Export current theme as `packs/custom_NNN.zip`
-- **ESC / Q:** Close overlay or resume Auto Show / Quit
+- **ESC / Q:** Close active overlay/FX Director or resume Auto Show / Quit
 
 ## 2. Character Layer & Expression Keys (`Shift` = backward)
 - **F / R / N / W:** Face (`000..255`), Ears, Nose (`Ctrl+N` hide), Eyebrows (`Ctrl+W` hide)
@@ -26,15 +26,16 @@
 - **Y:** Toggle Dual Side-Profile Dialogue Mode (`Ctrl+TAB` switches active Left/Right character)
 - **Ctrl+U:** Hide procedural mouth per favorite (saved per memory slot; animates active beard/jaw)
 
-## 3. Memory Banks & 3-Depth FX / Sky / Fog / Weather Shortcuts
+## 3. Memory Banks & 25-Slot 3D FX Director Shortcuts
 - **PageUp / PageDown:** Switch Memory Bank (`00..24`)
 - **1..9, 0 / Ctrl+1..9, 0:** Recall memory slot (`#000..#240`) or save current look into slot
 - **M / Shift+M:** Step memory slots `000..240`
 - **V / Shift+V:** Adjust crossfade duration (`0.0s .. 2.0s`)
-- **B / Shift+B:** Step all 23 3-depth FX, Sky, Fog & Weather effects (`1: Bat, 2: Fly, 3: Mosquito, 4: Bird, 5: Wasp, 6: Spider, 7: Butterfly, 8: UFO, 9: Cobweb, 10: Fog Back, 11: Ghost, 12: Snake, 13: Fire, 14: Lightning, 15: Mouse, 16: Stars, 17: Comets, 18: Aurora, 19: Rain, 20: Snowfall, 21: Fog Mid, 22: Fog Front, 23: All 3 Fog Layers`)
-- **Ctrl+Shift+1 / 2 / 3:** Toggle `Fog Back`, `Fog Mid`, and `Fog Front` independently on any scene
-- **Ctrl+Shift+S / C / A / R / W:** Mix Stars, Comets, Aurora, Rain, and Snowfall independently
-- **Ctrl+B / Ctrl+Alt+0:** Clear all active FX, fog & weather overlays
+- **B / Shift+B:** Open FX Director OSD and cycle all **25 FX slots** (`01: Bat`, `02: Nose Fly`, `03: Mosquito`, `04: Bird`, `05: Wasp`, `06: Spider`, `07: Butterfly`, `08: UFO`, `09: Cobweb`, `10: Smoke / Fog`, `11: Ghost`, `12: Snake`, `13: Fire`, `14: Lightning`, `15: Mouse`, `16: Fireflies`, `17: Grasshopper`, `18: Ants`, `19: Autumn Leaves`, `20: Fireworks`, `21: Snowfall`, `22: Rain`, `23: Stars`, `24: Comets`, `25: Aurora`)
+- **Alt+1 / Alt+2 / Alt+3 / Alt+4:** Toggle 4-bit binary depth layers (`1=SKY`, `2=FAR`, `4=MID`, `8=FRONT`) for the active FX slot
+- **Alt+0 / Ctrl+B / Ctrl+Alt+0:** Clear selected FX (`0000`) / Turn off all FX & depth layers simultaneously
+- **Ctrl + + / Ctrl + -:** Adjust critter swarm count (`1..50`)
+- **Ctrl+K / Ctrl+G:** Toggle ambient Perlin particle emitter & cycle 10 physics modes
 
 ## 4. 14-Layer Live Calibration (`TAB` + Arrows)
 - **TAB / Shift+TAB:** Cycle `EYE_LEFT .. FX` (14 layers)

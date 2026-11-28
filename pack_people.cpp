@@ -634,6 +634,9 @@ static std::string buildCulturalMakeupSvg(int style)
 // ==============================================================================
 // 1. MAIN GENERATOR: 10 PEOPLE OF THE WORLD + 5x10=50 SIDE-PROFILE PAIRS (127..226)
 // ==============================================================================
+// ==============================================================================
+// 1. MAIN GENERATOR: 10 PEOPLE OF THE WORLD + 5x10=50 SIDE-PROFILE PAIRS (127..226)
+// ==============================================================================
 int main(void)
 {
     std::cout << "=== Generating MakingFaces People of the World Pack (10x Front + 50x Side-Profile Pairs) ===\n";
@@ -683,6 +686,7 @@ int main(void)
         mkIds.push_back(saveSvgAsset("makeup", buildCulturalMakeupSvg(i)));
     }
 
+    std::vector<ProfileThemeSpec> profThemes;
     for (int i = 0; i < 10; ++i) {
         const auto& p = kPeople.at(i);
         appendFaceOffsets(fIds.at(i), {{"mouth_y", "12"}, {"brows_y", "-4"}});
@@ -699,47 +703,16 @@ int main(void)
             bgs.at(i),
             0, 1, p.lipColor, p.eyelash, -1, -1, p.animId, false, p.eyeBank
         });
+
+        profThemes.push_back({
+            p.skinHi, p.skinMid, p.skinDeep, p.skinHi, p.skinMid, p.skinDeep,
+            p.hairDeep, p.hairDark, p.hairMid,
+            44, bgs.at(i), 1, p.lipColor, p.eyelash, -1, p.animId, p.eyeBank,
+            p.wearMakeup, p.wearBeard, p.wearGlasses, p.wearHat
+        });
     }
 
-    static constexpr std::array<const char*, 5> kFiveChins = {"round", "square", "pointed", "cleft", "double"};
-    static constexpr std::array<const char*, 5> kFiveNoses = {"classic", "aquiline", "button", "broad", "long"};
-
-    int nextProfSlot = 127;
-    for (int i = 0; i < 10; ++i) {
-        const auto& p = kPeople.at(i);
-        for (int v = 0; v < 5; ++v) {
-            int idL = nextProfSlot++;
-            int idR = nextProfSlot++;
-            const char* cStyle = kFiveChins.at(v);
-            const char* nStyle = kFiveNoses.at(v);
-            saveSvgAssetAt("face",    idL, build3dProfileHeadSvg("ppl" + std::to_string(idL), "left",  p.skinHi, p.skinMid, p.skinDeep, p.skinHi, p.skinMid, p.skinDeep, cStyle));
-            saveSvgAssetAt("face",    idR, build3dProfileHeadSvg("ppr" + std::to_string(idR), "right", p.skinHi, p.skinMid, p.skinDeep, p.skinHi, p.skinMid, p.skinDeep, cStyle));
-            saveSvgAssetAt("makeup",  idL, build3dProfileMakeupSvg("left",  (i + v) % 3));
-            saveSvgAssetAt("makeup",  idR, build3dProfileMakeupSvg("right", (i + v) % 3));
-            saveSvgAssetAt("ears",    idL, build3dProfileEarsSvg("pel" + std::to_string(idL), "left",  p.skinHi, p.skinMid, p.skinDeep, p.skinMid, p.skinDeep, 44));
-            saveSvgAssetAt("ears",    idR, build3dProfileEarsSvg("per" + std::to_string(idR), "right", p.skinHi, p.skinMid, p.skinDeep, p.skinMid, p.skinDeep, 44));
-            saveSvgAssetAt("nose",    idL, build3dProfileNoseSvg("pnl" + std::to_string(idL), "left",  p.skinHi, p.skinMid, p.skinDeep, nStyle));
-            saveSvgAssetAt("nose",    idR, build3dProfileNoseSvg("pnr" + std::to_string(idR), "right", p.skinHi, p.skinMid, p.skinDeep, nStyle));
-            saveSvgAssetAt("brows",   idL, build3dProfileBrowsSvg("left",  p.hairDeep, p.hairMid, (p.browStyle + v) % 6));
-            saveSvgAssetAt("brows",   idR, build3dProfileBrowsSvg("right", p.hairDeep, p.hairMid, (p.browStyle + v) % 6));
-            saveSvgAssetAt("beard",   idL, build3dProfileBeardSvg("left",  p.hairDeep, p.hairDark, p.hairMid, (i + v) % 3));
-            saveSvgAssetAt("beard",   idR, build3dProfileBeardSvg("right", p.hairDeep, p.hairDark, p.hairMid, (i + v) % 3));
-            saveSvgAssetAt("glasses", idL, build3dProfileGlassesSvg("left",  (i + v) % 3));
-            saveSvgAssetAt("glasses", idR, build3dProfileGlassesSvg("right", (i + v) % 3));
-            saveSvgAssetAt("hair",    idL, build3dProfileHairSvg("left",  p.hairDeep, p.hairDark, p.hairMid, (p.hairStyle + v) % 8));
-            saveSvgAssetAt("hair",    idR, build3dProfileHairSvg("right", p.hairDeep, p.hairDark, p.hairMid, (p.hairStyle + v) % 8));
-            saveSvgAssetAt("hat",     idL, build3dProfileHatSvg("left",  (i + v) % 3));
-            saveSvgAssetAt("hat",     idR, build3dProfileHatSvg("right", (i + v) % 3));
-            appendFaceOffsets(idL, {{"face_split", "75"}});
-            appendFaceOffsets(idR, {{"face_split", "75"}});
-
-            int mkId = p.wearMakeup  ? idL : 0;
-            int bdId = p.wearBeard   ? idL : 0;
-            int glId = p.wearGlasses ? idL : 0;
-            int htId = p.wearHat     ? idL : 0;
-            appendMacroCombo({idL, mkId, idL, idL, bdId, glId, idL, htId, idL, bgs.at(i), 0, 1, p.lipColor, p.eyelash, -1, -1, p.animId, (v % 2 == 1), p.eyeBank});
-        }
-    }
+    generateStandardSideProfileSuite(profThemes, 5);
 
     cleanSvgAndSaveZip("people", "packs");
     std::cout << "[OK] 100% C++17 People of the World (10 Front + 50 Side-Profile Pairs 127..226) zipped to packs/people.zip!\n";

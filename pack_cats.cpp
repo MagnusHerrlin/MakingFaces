@@ -289,7 +289,7 @@ struct CatSpeciesSpec {
 };
 
 // ------------------------------------------------------------------------------
-// 11. Generate rooftop/savanna backdrops, 8 cats, 127+ profiles & packs/cats.zip
+// 11. Generate rooftop/savanna backdrops, 8 cats, 50 side-profile pairs & ZIP
 // ------------------------------------------------------------------------------
 int main(void)
 {
@@ -339,27 +339,20 @@ int main(void)
         appendMacroCombo({fId, c.makeupId, eId, nId, 0, c.glassId, c.hairId, c.hatId, 1, c.bgIdx, c.fxMask, c.teethId, 0, 0, c.eyeStyle, -1, c.animId, false, -1});
     }
 
-    int nextProfSlot = 127;
-    for (size_t spIdx : {size_t(0), size_t(1), size_t(2), size_t(5)})
+    std::vector<ProfileThemeSpec> profThemes;
+    for (size_t i = 0; i < 10; ++i)
     {
-        const auto& c = cats.at(spIdx);
-        int idL = nextProfSlot++;
-        int idR = nextProfSlot++;
-        saveSvgAssetAt("face", idL, build3dProfileHeadSvg("cpl" + std::to_string(idL), "left",  c.f1, c.f2, c.f3, c.mh, c.mm, c.f3));
-        saveSvgAssetAt("face", idR, build3dProfileHeadSvg("cpr" + std::to_string(idR), "right", c.f1, c.f2, c.f3, c.mh, c.mm, c.f3));
-        saveSvgAssetAt("ears", idL, build3dProfileEarsSvg("cel" + std::to_string(idL), "left",  c.f1, c.f2, c.f3, c.earInHex, c.f3, 52));
-        saveSvgAssetAt("ears", idR, build3dProfileEarsSvg("cer" + std::to_string(idR), "right", c.f1, c.f2, c.f3, c.earInHex, c.f3, 52));
-        saveSvgAssetAt("nose", idL, build3dProfileNoseSvg("cnl" + std::to_string(idL), "left",  c.noseHi, c.noseDeep, c.f3));
-        saveSvgAssetAt("nose", idR, build3dProfileNoseSvg("cnr" + std::to_string(idR), "right", c.noseHi, c.noseDeep, c.f3));
-        appendFaceOffsets(idL, {{"mouth_y", "12"}, {"brows_y", "-4"}, {"face_split", "75"}});
-        appendFaceOffsets(idR, {{"mouth_y", "12"}, {"brows_y", "-4"}, {"face_split", "75"}});
-        appendMacroCombo({idL, 0, idL, idL, 0, 0, 0, 0, 1, c.bgIdx, 0, c.teethId, 0, 0, c.eyeStyle, -1, c.animId, false, -1});
-        appendMacroCombo({idR, 0, idR, idR, 0, 0, 0, 0, 1, c.bgIdx, 0, c.teethId, 0, 0, c.eyeStyle, -1, c.animId, false, -1});
-        appendMacroCombo({idL, 0, idL, idL, 0, 0, 0, 0, 1, c.bgIdx, 0, c.teethId, 0, 0, c.eyeStyle, -1, c.animId, true,  -1});
+        const auto& c = cats.at(i % cats.size());
+        profThemes.push_back({
+            c.f1, c.f2, c.f3, c.mh, c.mm, c.f3,
+            c.stripeHex, c.f3, c.f2,
+            52, c.bgIdx, c.teethId, 0, 0, c.eyeStyle, c.animId, -1,
+            (c.makeupId != 0), true, (c.glassId != 0), (c.hatId != 0)
+        });
     }
+    generateStandardSideProfileSuite(profThemes, 5);
 
     cleanSvgAndSaveZip("cats");
-    std::cout << "[OK] 100% C++17 3D Cats & Big Cats + 127+ Side Profiles + Mouse FX zipped to packs/cats.zip!\n";
+    std::cout << "[OK] 100% C++17 3D Cats & Big Cats + 50 Side-Profile Pairs (127..226) zipped to packs/cats.zip!\n";
     return 0;
 }
-

@@ -2,8 +2,8 @@
 **Architecture & Design by Magnus Herrlin 2026**
 
 ## Active / Next Up (`v1.1.0` Roadmap)
-- [ ] **Fix floating red cabin in `pack_people.cpp` (`case 0` Nordic backdrop):**
-  - [ ] Lower the cabin `y` coordinates by ~45 px (from `y=468` to `y=512`) or raise the left hillside slope in `mid` so the cabin sits firmly on the ground.
+- [ ] **QLC+ Fixture (`MakingFaces.qxf`) & DMX Channel Verification:**
+  - [ ] Audit and align all 4 DMX modes (`1`, `2`, `7`, `39` channels), `MakingFaces.qxf`, and `MakingFaces-Show.qxw` export (`Ctrl+E`) with the 25-slot Stage FX Director and dual-profile channels.
 - [ ] **Create curated `pack_default.cpp` (`packs/default.zip`):**
   - [ ] Build a 50-character starter pack (10 People of the World, 10 Apes, 10 Cats, 10 Halloween, 10 Christmas) without the dark vampire hair underlayer, using `GLOBAL_FACE_Y_OFFSET = -50`.
 - [ ] **Universal Camera & Pi CSI Live Stream (`Ctrl+P`):**
@@ -31,14 +31,17 @@
 - [ ] **WebUI / Mobile Remote Control (Bonus):**
   - [ ] Lightweight embedded HTTP server (port `8080`) to switch memories, toggle AI/chat/face-recognition modes, and send live TTS lines from a phone browser.
 
-## Completed (`v1.0.0` Memory Engine, 4 DMX Modes, QLC+ Fixture, 3-Layer Fog & Theme Packs)
+## Completed (`v1.0.0` Memory Engine, 3D Stage FX Director, 50 Side-Profile Packs & Studios)
+- [x] **25-Slot 3D Stage FX Director & 4-Bit Binary Depth Masking (`stage_engine`, `stage_behaviors`, `stage_actors`):**
+  - [x] Added Perlin flow fields, Reynolds Boids flocking swarms, 3-pose bat (`bat_1..3`), realistic nose-landing fly with exaggerated cross-eye convergence, sweeping UFO with tractor beam, fireflies, grasshoppers, ants, autumn leaves, fireworks, periodic 3D Perlin fog, snow, rain, stars, comets & aurora.
+  - [x] Implemented unified 2-line FX Director OSD (`B` / `Shift+B`) with 4-bit binary depth toggles (`Alt+1..4` = `SKY/FAR/MID/FRONT`, `Alt+0` = Clear, `Ctrl+B` = All FX Off) and `Ctrl + +` / `Ctrl + -` swarm scaling (`1..50`).
+- [x] **Unified Side-Profile Geometry (`face_split=75`, `mouth_split=75`) & 50 Profile Pairs Across Theme Packs:**
+  - [x] Updated `pack_cats.cpp`, `pack_monkeys.cpp`, `pack_halloween.cpp`, `pack_people.cpp` (including grounded Nordic red cabin), `pack_misc.cpp`, and `pack_fx.cpp`.
 - [x] **Memory & Bank Engine (`animation_engine.h` / `animation_engine.cpp`):**
-  - [x] Migrated from Macro naming to `Memory #000..#240` (`Bank 00..24`) and `Animation 0..64` (`0 = AUTO LOOP`), maintaining backward compatibility with `[macro_combo_X]` in existing `.ini` files.
+  - [x] Implemented `Memory #000..#240` (`Bank 00..24`) and all 64 distinct procedural expressions (`Animation 0..64`, `0 = AUTO LOOP`) with 240 ms expression crossfades and backward compatibility for `[macro_combo_X]`.
 - [x] **4 Selectable DMX Modes (`1`, `2`, `7`, `39` channels) & QLC+ Fixture (`MakingFaces.qxf`):**
-  - [x] Implemented `1-Channel Memory`, `2-Channel Memory + Dimmer`, `7-Channel Show`, and `39-Channel Full` with flicker-free inverted PWM Master Dimmer (`0 = 100%`, `255 = Blackout`) and QLC+ `.qxw` show export (`Ctrl+E`).
-- [x] **3-Layer Seamless Fog & Multi-Display Wayland Support:**
-  - [x] Added independent `Fog Back`, `Fog Mid`, and `Fog Front` layers (`Ctrl+Shift+1/2/3`, FX `10/21/22/23`), `GLOBAL_FACE_Y_OFFSET = -50`, and `SDL_RENDERER_SOFTWARE` multi-monitor rendering.
+  - [x] Implemented `1-Channel Memory`, `2-Channel Memory + Dimmer`, `7-Channel Show`, and `39-Channel Full` with inverted PWM Master Dimmer (`0 = 100%`, `255 = Blackout`) and QLC+ `.qxw` show export (`Ctrl+E`).
 - [x] **Built-In Calibration & Import Studio (`Ctrl+I`) & Live Camera / USB Microscope (`Ctrl+P`):**
   - [x] Integrated OpenCV affine warp, mouse drag & scroll-wheel scaling, `Z`/`X` rotation, white-background flood-fill cutout (`W`), eye-socket cutout (`V`), Telea inpainting (`N`), and V4L2/CSI viewfinder.
-- [x] **Theme Pack Browser & Live Inspector (`F6` / `X`), Eye Browser (`F8`) & C++17 Theme Packs:**
-  - [x] Built `pack_misc.cpp` (241 memories + all 3D asset banks), `pack_people.cpp`, `pack_cats.cpp`, `pack_monkeys.cpp`, and `pack_halloween.cpp`.
+- [x] **Theme Pack Browser & Live Inspector (`F6` / `X`), Eye Browser (`F8`) & 5-Step Undo (`F7`):**
+  - [x] Implemented live `.zip` pack inspection, selective memory/asset import, append/replace, wipe, and 5-level undo stack.

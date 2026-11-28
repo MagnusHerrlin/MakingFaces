@@ -387,6 +387,12 @@ struct ApeSpec {
     int bgIdx; int fxMask; int hatId; int hairId; int makeupId; int beardId; int teethId; int animId;
 };
 
+// ------------------------------------------------------------------------------
+// 10. Generate 10 jungle backdrops, 10 apes, 50 side-profile pairs & ZIP
+// ------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
+// 10. Generate 10 jungle backdrops, 10 apes, 50 side-profile pairs & ZIP
+// ------------------------------------------------------------------------------
 int main(void)
 {
     ensureBaseIni();
@@ -438,6 +444,7 @@ int main(void)
         {"CyberGorilla", "cybergorilla", "#94a3b8","#475569","#0f172a","#bae6fd","#38bdf8","#0369a1",38,"gorilla",  bgs.at(7),0, pirate,0,0,     0,      1,58}
     }};
 
+    std::vector<ProfileThemeSpec> profThemes;
     for (size_t i = 0; i < specs.size(); ++i) {
         const auto& s = specs.at(i);
         std::string tag = "a" + std::to_string(i);
@@ -446,26 +453,18 @@ int main(void)
         int nId = saveSvgAsset("nose", build3dApeNoseSvg(tag, s.mh, s.mm, s.md, s.noseStyle));
         appendFaceOffsets(fId, {{"mouth_y", "14"}, {"brows_y", "-2"}});
         appendMacroCombo({fId, s.makeupId, eId, nId, s.beardId, 0, s.hairId, s.hatId, 1, s.bgIdx, s.fxMask, s.teethId, 0, 0, -1, -1, s.animId, false});
+
+        profThemes.push_back({
+            s.f1, s.f2, s.f3, s.mh, s.mm, s.md,
+            s.f3, s.f2, s.f1,
+            s.earR, s.bgIdx, s.teethId, 0, 0, -1, s.animId, -1,
+            (s.makeupId != 0), (s.beardId != 0), false, (s.hatId != 0)
+        });
     }
 
-    int nextProfSlot = 127;
-    for (size_t spIdx : {size_t(0), size_t(1), size_t(2), size_t(3)}) {
-        const auto& s = specs.at(spIdx);
-        int idL = nextProfSlot++, idR = nextProfSlot++;
-        saveSvgAssetAt("face", idL, build3dProfileHeadSvg("pl" + std::to_string(idL), "left",  s.f1, s.f2, s.f3, s.mh, s.mm, s.md));
-        saveSvgAssetAt("face", idR, build3dProfileHeadSvg("pr" + std::to_string(idR), "right", s.f1, s.f2, s.f3, s.mh, s.mm, s.md));
-        saveSvgAssetAt("ears", idL, build3dProfileEarsSvg("el" + std::to_string(idL), "left",  s.f1, s.f2, s.f3, s.mh, s.md, s.earR));
-        saveSvgAssetAt("ears", idR, build3dProfileEarsSvg("er" + std::to_string(idR), "right", s.f1, s.f2, s.f3, s.mh, s.md, s.earR));
-        saveSvgAssetAt("nose", idL, build3dProfileNoseSvg("nl" + std::to_string(idL), "left",  s.mh, s.mm, s.md));
-        saveSvgAssetAt("nose", idR, build3dProfileNoseSvg("nr" + std::to_string(idR), "right", s.mh, s.mm, s.md));
-        appendFaceOffsets(idL, {{"mouth_y", "14"}, {"brows_y", "-2"}, {"face_split", "75"}});
-        appendFaceOffsets(idR, {{"mouth_y", "14"}, {"brows_y", "-2"}, {"face_split", "75"}});
-        appendMacroCombo({idL, 0, idL, idL, 0, 0, 0, 0, 1, s.bgIdx, 0, s.teethId, 0, 0, -1, -1, s.animId, false});
-        appendMacroCombo({idR, 0, idR, idR, 0, 0, 0, 0, 1, s.bgIdx, 0, s.teethId, 0, 0, -1, -1, s.animId, false});
-        appendMacroCombo({idL, 0, idL, idL, 0, 0, 0, 0, 1, s.bgIdx, 0, s.teethId, 0, 0, -1, -1, s.animId, true});
-    }
+    generateStandardSideProfileSuite(profThemes, 5);
 
     cleanSvgAndSaveZip("monkeys");
-    std::cout << "[OK] 100% C++17 Original Apes + 127+ Side Profiles (Face/Ears/Nose) + Snake FX zipped!\n";
+    std::cout << "[OK] 100% C++17 Original Apes + 50 Side-Profile Pairs (127..226) + Snake FX zipped!\n";
     return 0;
 }

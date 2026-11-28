@@ -6,6 +6,9 @@
 #include "face_engine.h"
 #include "animation_engine.h"
 #include "audio_engine.h"
+#include "stage_engine.h"
+#include "stage_behaviors.h"
+#include "stage_actors.h"
 
 #include <SDL2/SDL_image.h>
 #include <opencv2/opencv.hpp>
@@ -55,6 +58,7 @@ std::atomic<float>       g_mouth_scale_factor_right{1.0f};
 std::atomic<bool>        g_critter_gaze_active{false};
 std::atomic<uint8_t>     g_critter_gaze_x{128};
 std::atomic<uint8_t>     g_critter_gaze_y{128};
+std::atomic<uint8_t>     g_critter_gaze_converge{0};
 std::atomic<uint8_t>     g_brow_left_tilt{128};
 std::atomic<uint8_t>     g_brow_right_tilt{128};
 std::atomic<uint8_t>     g_effective_mouth_gap{0};
@@ -67,6 +71,55 @@ uint16_t pbuffer[BUFFER_SIZE];
 std::array<eye_t, 2> eye;
 int      start_address = 1;
 
+static PerlinNoise       g_stage_noise(2026);
+static Stage             g_stage;
+static ParticleEmitter   g_fx_emitter(g_stage_noise, 100);
+static ParticleEmitter   g_snow_mid_emitter(g_stage_noise, 205);
+static ParticleEmitter   g_snow_front_emitter(g_stage_noise, 206);
+static ParticleEmitter   g_rain_mid_emitter(g_stage_noise, 207);
+static ParticleEmitter   g_rain_front_emitter(g_stage_noise, 208);
+static std::array<ParticleEmitter, 17> g_critter_emitters = {{
+    ParticleEmitter(g_stage_noise, 300), ParticleEmitter(g_stage_noise, 301),
+    ParticleEmitter(g_stage_noise, 302), ParticleEmitter(g_stage_noise, 303),
+    ParticleEmitter(g_stage_noise, 304), ParticleEmitter(g_stage_noise, 305),
+    ParticleEmitter(g_stage_noise, 306), ParticleEmitter(g_stage_noise, 307),
+    ParticleEmitter(g_stage_noise, 308), ParticleEmitter(g_stage_noise, 309),
+    ParticleEmitter(g_stage_noise, 310), ParticleEmitter(g_stage_noise, 311),
+    ParticleEmitter(g_stage_noise, 312), ParticleEmitter(g_stage_noise, 313),
+    ParticleEmitter(g_stage_noise, 314), ParticleEmitter(g_stage_noise, 315),
+    ParticleEmitter(g_stage_noise, 316)
+}};
+static ParticleEmitter   g_leaves_emitter(g_stage_noise, 320);
+static ParticleEmitter   g_fireworks_emitter(g_stage_noise, 321);
+static ParticleEmitter   g_grasshopper_emitter(g_stage_noise, 322);
+static ParticleEmitter   g_ant_emitter(g_stage_noise, 323);
+static ParticleEmitter   g_firefly_emitter(g_stage_noise, 324);
+
+static SeamlessFogActor* g_cloud_actor     = nullptr;
+static SeamlessFogActor* g_fog_back_actor  = nullptr;
+static SeamlessFogActor* g_fog_mid_actor   = nullptr;
+static SeamlessFogActor* g_fog_front_actor = nullptr;
+static UfoActor*         g_ufo_actor       = nullptr;
+static NoseFlyActor*     g_nose_fly_actor  = nullptr;
+static SpiderActor*      g_spider_actor    = nullptr;
+static SnakeActor*       g_snake_actor     = nullptr;
+static LightningActor*   g_lightning_actor = nullptr;
+static FireActor*        g_fire_actor      = nullptr;
+static StaticPropActor*  g_cobweb_actor    = nullptr;
+
+static std::array<uint8_t, 25> g_fx_depth_masks{}; // 25 FX slots x 4-bit binary depth (1=SKY, 2=FAR, 4=MID, 8=FRONT)
+static int                     g_selected_fx_slot = -1;
+static bool                    g_fx_osd_active    = false;
+
+static SharedVideoClip   g_fx_video;
+static SDL_Texture*      g_default_particle_tex = nullptr;
+static SDL_Texture*      g_rain_drop_tex        = nullptr;
+static bool              g_stage_fx_enabled     = false;
+static int               g_stage_fx_mode        = 3; // 3 = PERLIN_SWIRL
+static int               g_stage_fx_count       = 50;
+static int               g_critter_swarm_count  = 1;
+static uint8_t           g_parallax_vel_x       = 128; // 128 = still
+static uint8_t           g_parallax_vel_y       = 128; // 128 = still
 
 // ==============================================================================
 // Section B. On-Screen Display (OSD), Help, About & Telemetry Overlays
@@ -193,6 +246,7 @@ static std::string getLocalIpAddress(void)
     freeifaddrs(ifaddr);
     return res;
 }
+
 // ------------------------------------------------------------------------------
 // 6. Render large 2-line OSD banner with subheader & bottom status bar
 // ------------------------------------------------------------------------------
@@ -207,6 +261,8 @@ static void renderOsdOverlay(SDL_Renderer* ren, uint32_t nowMs, const AppRuntime
         subHeader = state.dualProfileMode
                         ? (state.editingRightProfile ? "CALIBRATE [RIGHT CHARACTER]" : "CALIBRATE [LEFT CHARACTER]")
                         : "CALIBRATE [TAB=PART  ALT=SIZE]";
+    } else if (g_fx_osd_active && g_selected_fx_slot >= 0) {
+        subHeader = "FX DIRECTOR [B/SH+B=FX  ALT+1..4=LAYER]";
     } else if (state.curFace >= PROFILE_FACE_START_INDEX) {
         subHeader = state.dualProfileMode
                         ? (state.editingRightProfile ? "DUAL PROFILE [ACTIVE: RIGHT]" : "DUAL PROFILE [ACTIVE: LEFT]")
@@ -216,7 +272,8 @@ static void renderOsdOverlay(SDL_Renderer* ren, uint32_t nowMs, const AppRuntime
     if (osd.text.at(0) != '\0') {
         if (!osd.persistent && osd.hideAtMs > 0 && nowMs >= osd.hideAtMs) {
             osd.text.at(0) = '\0';
-        } else if (state.osdEnabled || state.isEditingOffsets) {
+            g_fx_osd_active = false;
+        } else if (state.osdEnabled || state.isEditingOffsets || g_fx_osd_active) {
             int len    = static_cast<int>(std::strlen(osd.text.data()));
             int subLen = static_cast<int>(std::strlen(subHeader));
             int scale  = (len > 26) ? 2 : 3;
@@ -290,10 +347,10 @@ static void renderHelpAndAbout(SDL_Renderer* ren, const FaceAppConfig& cfg, cons
             "CTRL+1..9,0: SAVE MEMORY SLOT (LOCKED)",
             "M / SHIFT+M: STEP MEMORY SLOT",
             "-------------------------------------------",
-            "B/SH+B: STEP 23 FX [CRITTERS/SKY/3X FOG]",
-            "CTRL+SHIFT+1/2/3: FOG BACK / MID / FRONT",
-            "CTRL+SH+S/C/A/R/W: STAR/COMET/AUR/RAIN/SNOW",
-            "CTRL+U/N/W: HIDE MOUTH/NOSE/BROWS",
+            "B / SHIFT+B: SELECT FX [01..25]",
+            "ALT+1..4: TOGGLE FX DEPTH [SKY/FAR/MID/FRT]",
+            "ALT+0: CLEAR FX   CTRL+B: ALL FX OFF",
+            "CTRL + / -: SWARM COUNT [1..50]",
             "TAB+ARROWS: MOVE  ALT+ARROWS: SCALE",
             "CTRL+X:ZIP  CTRL+E:QLC+  CTRL+R:REC AUDIO"
         };
@@ -327,6 +384,7 @@ static void renderHelpAndAbout(SDL_Renderer* ren, const FaceAppConfig& cfg, cons
         drawTextLine(ren, "PRESS F9 OR ESC TO CLOSE", 72, 558, 2);
     }
 }
+
 // ==============================================================================
 // Section C. Live Camera & USB Microscope Viewfinder (USB V4L2 + Pi CSI)
 // ==============================================================================
@@ -913,7 +971,7 @@ static void applyMaskOffsetProfile(const FaceAppConfig& cfg, AppRuntimeState& st
         prof = it->second;
     } else if (maskId >= PROFILE_FACE_START_INDEX) {
         prof.face_split  = 75;
-        prof.mouth_split = 0;
+        prof.mouth_split = 75;
     } else {
         auto defIt = cfg.mask_profiles.find(0);
         if (defIt != cfg.mask_profiles.end()) {
@@ -928,7 +986,9 @@ static void applyMaskOffsetProfile(const FaceAppConfig& cfg, AppRuntimeState& st
         if (prof.face_split == 0) {
             prof.face_split = 75;
         }
-        prof.mouth_split = 0;
+        if (prof.mouth_split == 0) {
+            prof.mouth_split = prof.face_split;
+        }
     }
 
     auto clampSc = [](float v) { return std::max(0.50f, std::min(1.60f, v)); };
@@ -1458,6 +1518,18 @@ static void reloadAllTexturesAndState(SDL_Renderer* ren, FaceAppConfig& cfg, App
         }
         l->loadedIndex = 0;
     }
+    g_stage.clearActors();
+    g_fog_back_actor  = nullptr;
+    g_fog_mid_actor   = nullptr;
+    g_fog_front_actor = nullptr;
+    g_cloud_actor     = nullptr;
+    g_ufo_actor       = nullptr;
+    g_nose_fly_actor  = nullptr;
+    g_spider_actor    = nullptr;
+    g_snake_actor     = nullptr;
+    g_lightning_actor = nullptr;
+    g_fire_actor      = nullptr;
+    g_cobweb_actor    = nullptr;
     if (ren) {
         destroyParallaxBackdrop(state.parallaxBg);
         destroyFxSpriteBank(state.fxBank);
@@ -1600,9 +1672,11 @@ static bool appendCheckedItemsFromZipPack(SDL_Window* window, const std::string&
         int oddBase = isProf ? ((oldId % 2 == 1) ? oldId : (oldId - 1)) : oldId;
 
         if (isProf) {
-            remap[folder][oddBase]     = nextProfOdd[folder];
-            remap[folder][oddBase + 1] = nextProfOdd[folder] + 1;
-            nextProfOdd[folder] += 2;
+            int dstOdd  = std::min(253, nextProfOdd[folder]);
+            int dstEven = std::min(254, dstOdd + 1);
+            remap[folder][oddBase]     = dstOdd;
+            remap[folder][oddBase + 1] = dstEven;
+            if (nextProfOdd[folder] <= 253) nextProfOdd[folder] += 2;
         } else {
             remap[folder][oldId] = std::min(255, nextFront[folder]++);
         }
@@ -1641,16 +1715,25 @@ static bool appendCheckedItemsFromZipPack(SDL_Window* window, const std::string&
             break;
         }
         uint8_t origFace = mc.face;
-        mc.face     = copyAssetSlot("face", mc.face);
-        mc.makeup   = copyAssetSlot("makeup", mc.makeup);
-        mc.ears     = copyAssetSlot("ears", mc.ears);
-        mc.nose     = copyAssetSlot("nose", mc.nose);
-        mc.brows    = copyAssetSlot("brows", mc.brows);
-        mc.beard    = copyAssetSlot("beard", mc.beard);
-        mc.glasses  = copyAssetSlot("glasses", mc.glasses);
-        mc.hair     = copyAssetSlot("hair", mc.hair);
-        mc.hat      = copyAssetSlot("hat", mc.hat);
-        mc.bg_scene = copyAssetSlot("bg", mc.bg_scene);
+        mc.face          = copyAssetSlot("face", mc.face);
+        mc.makeup        = copyAssetSlot("makeup", mc.makeup);
+        mc.ears          = copyAssetSlot("ears", mc.ears);
+        mc.nose          = copyAssetSlot("nose", mc.nose);
+        mc.brows         = copyAssetSlot("brows", mc.brows);
+        mc.beard         = copyAssetSlot("beard", mc.beard);
+        mc.glasses       = copyAssetSlot("glasses", mc.glasses);
+        mc.hair          = copyAssetSlot("hair", mc.hair);
+        mc.hat           = copyAssetSlot("hat", mc.hat);
+        mc.right_face    = copyAssetSlot("face", mc.right_face);
+        mc.right_makeup  = copyAssetSlot("makeup", mc.right_makeup);
+        mc.right_ears    = copyAssetSlot("ears", mc.right_ears);
+        mc.right_nose    = copyAssetSlot("nose", mc.right_nose);
+        mc.right_beard   = copyAssetSlot("beard", mc.right_beard);
+        mc.right_glasses = copyAssetSlot("glasses", mc.right_glasses);
+        mc.right_hair    = copyAssetSlot("hair", mc.right_hair);
+        mc.right_hat     = copyAssetSlot("hat", mc.right_hat);
+        mc.right_brows   = copyAssetSlot("brows", mc.right_brows);
+        mc.bg_scene      = copyAssetSlot("bg", mc.bg_scene);
         if (origFace > 0 && incCfg.mask_profiles.count(origFace)) {
             cfg.mask_profiles[mc.face] = incCfg.mask_profiles.at(origFace);
         }
@@ -2745,7 +2828,7 @@ static void updateParallaxBackdrop(SDL_Renderer* ren, const std::string& assetsD
 }
 
 // ------------------------------------------------------------------------------
-// 66. Load all 17 FX sprites + auto-generate OpenCV GaussianBlur depth textures
+// 66. Load all 17 FX sprites, _2 animation frames, leaf/snow & Gaussian DOF blur
 // ------------------------------------------------------------------------------
 void initFxSpriteBank(SDL_Renderer* ren, const std::string& assetsDir, FxSpriteBank& bank)
 {
@@ -2758,6 +2841,11 @@ void initFxSpriteBank(SDL_Renderer* ren, const std::string& assetsDir, FxSpriteB
     for (size_t i = 0; i < kFiles.size(); ++i) {
         fs::path p = fs::path(assetsDir) / "fx" / kFiles.at(i);
         bank.sprites.at(i) = loadPngIfExists(ren, p);
+
+        std::string stem = fs::path(kFiles.at(i)).stem().string();
+        fs::path pFrame2 = fs::path(assetsDir) / "fx" / (stem + "_2.png");
+        bank.animSprites.at(i) = loadPngIfExists(ren, pFrame2);
+
         if (fs::exists(p)) {
             cv::Mat img = cv::imread(p.string(), cv::IMREAD_UNCHANGED);
             if (!img.empty()) {
@@ -2779,29 +2867,39 @@ void initFxSpriteBank(SDL_Renderer* ren, const std::string& assetsDir, FxSpriteB
             }
         }
     }
-    bank.fog2 = loadPngIfExists(ren, fs::path(assetsDir) / "fx" / "fog_2.png");
+    bank.fog2                 = loadPngIfExists(ren, fs::path(assetsDir) / "fx" / "fog_2.png");
+    bank.leafTex              = loadPngIfExists(ren, fs::path(assetsDir) / "fx" / "leaf.png");
+    bank.snowflakeTex         = loadPngIfExists(ren, fs::path(assetsDir) / "fx" / "snowflake.png");
+    bank.fireflyTex.at(0)     = loadPngIfExists(ren, fs::path(assetsDir) / "fx" / "firefly_1.png");
+    bank.fireflyTex.at(1)     = loadPngIfExists(ren, fs::path(assetsDir) / "fx" / "firefly_2.png");
+    bank.grasshopperTex.at(0) = loadPngIfExists(ren, fs::path(assetsDir) / "fx" / "grasshopper_1.png");
+    bank.grasshopperTex.at(1) = loadPngIfExists(ren, fs::path(assetsDir) / "fx" / "grasshopper_2.png");
+    bank.antTex.at(0)         = loadPngIfExists(ren, fs::path(assetsDir) / "fx" / "ant_1.png");
+    bank.antTex.at(1)         = loadPngIfExists(ren, fs::path(assetsDir) / "fx" / "ant_2.png");
 }
 
 // ------------------------------------------------------------------------------
-// 67. Free all sharp & blurred FX sprite textures on shutdown or theme reload
+// 67. Free all sharp, animated & blurred FX sprite textures on shutdown/reload
 // ------------------------------------------------------------------------------
 void destroyFxSpriteBank(FxSpriteBank& bank)
 {
     for (auto*& t : bank.sprites) {
-        if (t) {
-            SDL_DestroyTexture(t);
-            t = nullptr;
-        }
+        if (t) { SDL_DestroyTexture(t); t = nullptr; }
+    }
+    for (auto*& t : bank.animSprites) {
+        if (t) { SDL_DestroyTexture(t); t = nullptr; }
     }
     for (auto*& t : bank.blurSprites) {
-        if (t) {
-            SDL_DestroyTexture(t);
-            t = nullptr;
-        }
+        if (t) { SDL_DestroyTexture(t); t = nullptr; }
     }
-    if (bank.fog2) {
-        SDL_DestroyTexture(bank.fog2);
-        bank.fog2 = nullptr;
+    SDL_Texture** extras[] = {
+        &bank.fog2, &bank.leafTex, &bank.snowflakeTex,
+        &bank.fireflyTex.at(0), &bank.fireflyTex.at(1),
+        &bank.grasshopperTex.at(0), &bank.grasshopperTex.at(1),
+        &bank.antTex.at(0), &bank.antTex.at(1)
+    };
+    for (auto** t : extras) {
+        if (*t) { SDL_DestroyTexture(*t); *t = nullptr; }
     }
 }
 
@@ -2859,7 +2957,6 @@ static void toggleWindowFullscreen(SDL_Window* window, bool& isFullscreen)
     }
     SDL_ShowCursor(isFullscreen ? SDL_DISABLE : SDL_ENABLE);
 }
-
 
 // ------------------------------------------------------------------------------
 // 70. Step asset index forward or backward across 0..maxCount with wrap-around
@@ -2932,62 +3029,6 @@ static void drawOvalShadow(SDL_Renderer* ren, int cx, int cy, int rx, int ry, ui
 }
 
 // ------------------------------------------------------------------------------
-// 74. Render seamlessly mirrored horizontal scrolling cloud layer
-// ------------------------------------------------------------------------------
-static void renderDriftingCloudLayer(SDL_Renderer* ren, SDL_Texture* tex, float scrollPx, int outW, int outH)
-{
-    if (!tex) {
-        return;
-    }
-    int texW = 0;
-    int texH = 0;
-    SDL_QueryTexture(tex, nullptr, nullptr, &texW, &texH);
-    SDL_Rect src = (texW > 8 && texH > 4) ? SDL_Rect{2, 0, texW - 4, texH - 2} : SDL_Rect{0, 0, texW, texH};
-
-    int periodW = outW * 2;
-    float wrapped = std::fmod(scrollPx, static_cast<float>(periodW));
-    if (wrapped < 0.0f) {
-        wrapped += static_cast<float>(periodW);
-    }
-    int x0 = -static_cast<int>(std::floor(wrapped));
-
-    for (int i = 0; i < 3; ++i) {
-        SDL_Rect dst{x0 + i * outW, 0, outW + 1, outH + 2};
-        SDL_RendererFlip flip = ((i % 2) == 1) ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
-        SDL_RenderCopyEx(ren, tex, &src, &dst, 0.0, nullptr, flip);
-    }
-}
-
-// ------------------------------------------------------------------------------
-// 75. Render seamlessly tiled & mirrored fog layer (never shows image edges)
-// ------------------------------------------------------------------------------
-static void renderSeamlessFogLayer(SDL_Renderer* ren, SDL_Texture* tex, float scrollPx, int outW, int outH, uint8_t alpha)
-{
-    if (!tex) {
-        return;
-    }
-    int texW = 0;
-    int texH = 0;
-    SDL_QueryTexture(tex, nullptr, nullptr, &texW, &texH);
-    SDL_Rect src = (texW > 12 && texH > 8) ? SDL_Rect{4, 2, texW - 8, texH - 4} : SDL_Rect{0, 0, texW, texH};
-
-    int tileW   = static_cast<int>(std::round(outW * 1.35f));
-    int periodW = tileW * 2;
-    float wrapped = std::fmod(scrollPx, static_cast<float>(periodW));
-    if (wrapped < 0.0f) {
-        wrapped += static_cast<float>(periodW);
-    }
-    int x0 = -static_cast<int>(std::floor(wrapped));
-
-    SDL_SetTextureAlphaMod(tex, alpha);
-    for (int i = 0; i < 3; ++i) {
-        SDL_Rect dst{x0 + i * tileW, 0, tileW + 2, outH + 2};
-        SDL_RendererFlip flip = ((i % 2) == 1) ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
-        SDL_RenderCopyEx(ren, tex, &src, &dst, 0.0, nullptr, flip);
-    }
-    SDL_SetTextureAlphaMod(tex, 255);
-}
-// ------------------------------------------------------------------------------
 // 76. Render 5-layer depth backdrop + independent stars, comets & aurora FX
 // ------------------------------------------------------------------------------
 static void renderDepthBackdropLayers(SDL_Renderer* ren, const ParallaxBackdrop& bg, uint32_t fxMask, uint32_t nowMs, int outW, int outH)
@@ -3018,9 +3059,9 @@ static void renderDepthBackdropLayers(SDL_Renderer* ren, const ParallaxBackdrop&
             copyCroppedFull(bg.single);
         } else {
             copyCroppedFull(bg.sky);
-            renderDriftingCloudLayer(ren, bg.clouds, t * 10.0f, outW, outH);
         }
     }
+    g_stage.renderLayer(ren, DepthLayer::SKY, 0.15f);
 
     if (showStars || showComet || showAurora) {
         SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_ADD);
@@ -3100,272 +3141,35 @@ static void renderDepthBackdropLayers(SDL_Renderer* ren, const ParallaxBackdrop&
 }
 
 // ------------------------------------------------------------------------------
-// 77. Clear active critter eye-tracking target
+// 77. Clear active critter eye-tracking target and cross-eye convergence
 // ------------------------------------------------------------------------------
 static inline void clearGazeTarget(void)
 {
     g_critter_gaze_active.store(false, std::memory_order_relaxed);
+    g_critter_gaze_converge.store(0, std::memory_order_relaxed);
 }
 
 // ------------------------------------------------------------------------------
-// 78. Update critter eye-tracking target coordinates (with inverted Y axis)
+// 78. Update critter eye-tracking coordinates & cross-eye convergence (0..1)
 // ------------------------------------------------------------------------------
-static inline void setGazeTarget(float x, float y)
+static inline void setGazeTarget(float x, float y, float crossEyeAmount = 0.0f)
 {
     int gx = std::max(0, std::min(255, static_cast<int>(std::round((x / static_cast<float>(BASE_CANVAS_W)) * 255.0f))));
     int gy = std::max(0, std::min(255, static_cast<int>(std::round(((static_cast<float>(BASE_CANVAS_H) - y) / static_cast<float>(BASE_CANVAS_H)) * 255.0f))));
+    int cv = std::max(0, std::min(120, static_cast<int>(std::round(crossEyeAmount * 112.0f))));
     g_critter_gaze_x.store(static_cast<uint8_t>(gx), std::memory_order_relaxed);
     g_critter_gaze_y.store(static_cast<uint8_t>(gy), std::memory_order_relaxed);
+    g_critter_gaze_converge.store(static_cast<uint8_t>(cv), std::memory_order_relaxed);
     g_critter_gaze_active.store(true, std::memory_order_relaxed);
 }
+
 // ------------------------------------------------------------------------------
-// 79. Render FX at depthPass: 0=far horizon, 1=mid behind face, 2=front sharp
+// 79. Legacy FX depth hook (all scenic FX now live as Stage Actors)
 // ------------------------------------------------------------------------------
-static void renderEffectsAtDepth(SDL_Renderer* ren, const FxSpriteBank& bank, uint32_t fxMask, int depthPass, uint32_t nowMs, bool& ioTrackedGaze)
+static void renderEffectsAtDepth(SDL_Renderer*, const FxSpriteBank&, uint32_t, int, uint32_t, bool&)
 {
-    static uint32_t s_mouseEnableMs = 0;
-    static bool     s_mouseWasOn    = false;
-    bool mouseOn = ((fxMask & (1u << 14)) != 0);
-    if (depthPass == 0) {
-        if (mouseOn && !s_mouseWasOn) {
-            s_mouseEnableMs = nowMs;
-        }
-        s_mouseWasOn = mouseOn;
-    }
-
-    if (fxMask == 0) {
-        return;
-    }
-
-    float t = static_cast<float>(nowMs) * 0.001f;
-    auto setGaze = [&](float x, float y) {
-        if (!ioTrackedGaze) {
-            setGazeTarget(x, y);
-            ioTrackedGaze = true;
-        }
-    };
-    auto getTex = [&](int idx, bool farBlur) -> SDL_Texture* {
-        if (farBlur && bank.blurSprites.at(idx)) {
-            return bank.blurSprites.at(idx);
-        }
-        return bank.sprites.at(idx);
-    };
-
-    if (depthPass == 1 && (fxMask & (1u << 8)) && bank.sprites.at(8)) {
-        SDL_Rect web{0, 0, BASE_CANVAS_W, BASE_CANVAS_H};
-        SDL_RenderCopy(ren, bank.sprites.at(8), nullptr, &web);
-    }
-
-    if ((fxMask & (1u << 10)) && bank.sprites.at(10)) {
-        int pass = static_cast<int>(std::floor(t / 14.0f));
-        int targetPass = ((pass * 3 + 1) % 2 == 0) ? 1 : 2;
-        if (depthPass == targetPass) {
-            bool isMid = (depthPass == 1);
-            float sc   = isMid ? 0.65f : 1.0f;
-            float ghX  = 300.0f + std::sin(t * 0.65f) * 210.0f;
-            float ghY  = (isMid ? 330.0f : 390.0f) + std::sin(t * 1.30f) * 75.0f;
-            setGaze(ghX, ghY);
-            SDL_Texture* tex = getTex(10, isMid);
-            SDL_SetTextureAlphaMod(tex, isMid ? 130 : 175);
-            int w = static_cast<int>(220 * sc);
-            int h = static_cast<int>(280 * sc);
-            SDL_Rect ghDst{static_cast<int>(ghX) - w / 2, static_cast<int>(ghY) - h / 2, w, h};
-            SDL_RenderCopyEx(ren, tex, nullptr, &ghDst, std::sin(t * 1.1f) * 6.0, nullptr,
-                             (std::cos(t * 0.65f) >= 0.0f) ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL);
-            SDL_SetTextureAlphaMod(tex, 255);
-        }
-    }
-
-    if (depthPass == 2 && (fxMask & (1u << 11)) && bank.sprites.at(11)) {
-        const float period = 11.0f;
-        int passIdx = static_cast<int>(std::floor(t / period));
-        float u = std::fmod(t, period);
-        if (u < 6.2f) {
-            float baseX = 110.0f + static_cast<float>((passIdx * 173) % 380);
-            float dropP = std::sin((u / 6.2f) * 3.1415926f);
-            float snkX  = baseX + std::sin(t * 3.8f) * 26.0f;
-            float snkY  = -190.0f + dropP * 320.0f;
-            setGaze(snkX, snkY + 135.0f);
-            SDL_Rect snkDst{static_cast<int>(snkX) - 70, static_cast<int>(snkY) - 180, 140, 360};
-            SDL_RenderCopyEx(ren, bank.sprites.at(11), nullptr, &snkDst, std::sin(t * 3.8f) * 8.0, nullptr,
-                             ((passIdx % 2) == 0) ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL);
-        }
-    }
-
-    if (mouseOn && bank.sprites.at(16)) {
-        const float period = 14.0f;
-        float mouseT = static_cast<float>(nowMs - s_mouseEnableMs) * 0.001f;
-        int passIdx = static_cast<int>(std::floor(mouseT / period));
-        int targetPass = ((passIdx * 7 + 3) % 2 == 0) ? 1 : 2;
-        float u = std::fmod(mouseT, period);
-        if (depthPass == targetPass && u < 5.4f) {
-            bool isMid = (depthPass == 1);
-            float sc   = isMid ? 0.56f : 1.0f;
-            bool leftToRight = (passIdx % 2) == 0;
-            float prog = (u < 2.1f) ? ((u / 2.1f) * 0.48f) : ((u < 3.3f) ? 0.48f : (0.48f + ((u - 3.3f) / 2.1f) * 0.52f));
-            float cx = leftToRight ? (-75.0f + prog * 750.0f) : (675.0f - prog * 750.0f);
-            float scurryBob = (u >= 2.1f && u < 3.3f) ? std::sin(t * 28.0f) * 1.5f : std::fabs(std::sin(t * 34.0f)) * 4.5f;
-            float cy = (isMid ? 688.0f : 764.0f) - scurryBob * sc;
-            setGaze(cx, cy);
-            SDL_Texture* tex = getTex(16, isMid);
-            SDL_SetTextureAlphaMod(tex, isMid ? 185 : 255);
-            int w = static_cast<int>(140 * sc);
-            int h = static_cast<int>(84 * sc);
-            SDL_Rect dst{static_cast<int>(cx) - w / 2, static_cast<int>(cy) - h / 2, w, h};
-            SDL_RenderCopyEx(ren, tex, nullptr, &dst, std::sin(t * 34.0f) * 3.0, nullptr,
-                             leftToRight ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL);
-            SDL_SetTextureAlphaMod(tex, 255);
-        }
-    }
-    for (int i = 0; i < 8; ++i) {
-        if (!(fxMask & (1u << i)) || !bank.sprites.at(i)) {
-            continue;
-        }
-
-        if (i == 5) {
-            const float period = 12.0f;
-            float u = std::fmod(t + 1.5f, period);
-            if (depthPass == 2 && u < 7.5f) {
-                float drop = std::sin((u / 7.5f) * 3.1415926f);
-                float cx   = 515.0f + std::sin(t * 2.2f) * 14.0f;
-                float cy   = -40.0f + drop * 340.0f;
-                setGaze(cx, cy);
-                SDL_SetRenderDrawColor(ren, 230, 235, 245, 190);
-                SDL_RenderDrawLine(ren, 515, 0, static_cast<int>(cx), static_cast<int>(cy));
-                SDL_Rect dst{static_cast<int>(cx) - 44, static_cast<int>(cy) - 44, 88, 88};
-                SDL_RenderCopyEx(ren, bank.sprites.at(i), nullptr, &dst, std::sin(t * 2.2f) * 8.0, nullptr, SDL_FLIP_NONE);
-            }
-            continue;
-        }
-
-        if (i == 3) {
-            const float period = 10.5f;
-            int passIdx = static_cast<int>(std::floor(t / period));
-            int targetPass = ((passIdx * 5 + 2) % 3);
-            float u = std::fmod(t, period);
-            if (depthPass == targetPass && u < 4.2f) {
-                bool isBack = (depthPass < 2);
-                float sc    = (depthPass == 0) ? 0.44f : ((depthPass == 1) ? 0.64f : 1.0f);
-                float p     = u / 4.2f;
-                bool leftToRight = (passIdx % 2) == 0;
-                float cx = leftToRight ? (-90.0f + p * 780.0f) : (690.0f - p * 780.0f);
-                float cy = (depthPass == 0 ? 115.0f : 155.0f) + std::sin(p * 3.1415926f) * 45.0f * sc + std::sin(t * 9.0f) * 10.0f * sc;
-                setGaze(cx, cy);
-                SDL_Texture* tex = getTex(i, isBack);
-                SDL_SetTextureAlphaMod(tex, (depthPass == 0) ? 165 : ((depthPass == 1) ? 205 : 255));
-                int sz = static_cast<int>(92 * sc);
-                SDL_Rect dst{static_cast<int>(cx) - sz / 2, static_cast<int>(cy) - sz / 2, sz, sz};
-                SDL_RenderCopyEx(ren, tex, nullptr, &dst, std::sin(t * 9.0f) * 6.0, nullptr, leftToRight ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL);
-                SDL_SetTextureAlphaMod(tex, 255);
-            }
-            continue;
-        }
-
-        if (i == 1) {
-            const float period = 13.0f;
-            int passIdx = static_cast<int>(std::floor(t / period));
-            float u = std::fmod(t, period);
-            const float noseX = 300.0f;
-            const float noseY = 448.0f;
-            bool goingRight = (passIdx % 2) == 0;
-            if (depthPass == 2 && u < 7.8f) {
-                float cx = noseX;
-                float cy = noseY;
-                float angleDeg = 0.0f;
-                if (u < 2.2f) {
-                    float p = u / 2.2f;
-                    float startX = goingRight ? -70.0f : 670.0f;
-                    cx = startX + (noseX - startX) * p + std::sin(p * 12.56f) * 48.0f * (1.0f - p);
-                    cy = 180.0f + (noseY - 180.0f) * p + std::cos(p * 9.42f) * 38.0f * (1.0f - p);
-                    angleDeg = std::sin(t * 22.0f) * 14.0f;
-                } else if (u < 5.6f) {
-                    cx = noseX + std::sin(t * 18.0f) * 0.8f;
-                    cy = noseY;
-                    angleDeg = std::sin(t * 12.0f) * 3.0f;
-                } else {
-                    float p = (u - 5.6f) / 2.2f;
-                    float endX = goingRight ? 670.0f : -70.0f;
-                    cx = noseX + (endX - noseX) * p + std::sin(p * 12.56f) * 44.0f * p;
-                    cy = noseY - p * 260.0f + std::cos(p * 9.42f) * 32.0f * p;
-                    angleDeg = std::sin(t * 22.0f) * 14.0f;
-                }
-                setGaze(cx, cy);
-                SDL_Rect dst{static_cast<int>(cx) - 38, static_cast<int>(cy) - 38, 76, 76};
-                SDL_RenderCopyEx(ren, bank.sprites.at(i), nullptr, &dst, angleDeg, nullptr, goingRight ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL);
-            }
-            continue;
-        }
-
-        const float period = 11.5f + i * 1.4f;
-        float localT = t + i * 2.3f;
-        int passIdx = static_cast<int>(std::floor(localT / period));
-        int targetPass = ((passIdx * 7 + i * 3) % 3);
-        float u = std::fmod(localT, period);
-        if (depthPass == targetPass && u < 5.6f) {
-            bool isBack = (depthPass < 2);
-            float sc    = (depthPass == 0) ? 0.45f : ((depthPass == 1) ? 0.65f : 1.0f);
-            float p     = u / 5.6f;
-            bool leftToRight = (passIdx % 2) == 0;
-            float baseX   = leftToRight ? (-80.0f + p * 760.0f) : (680.0f - p * 760.0f);
-            float loopEnv = std::sin(p * 3.1415926f);
-            float cx      = baseX + std::sin(p * 9.42f) * 85.0f * loopEnv;
-            float cy      = (190.0f + (i % 3) * 65.0f) + std::cos(p * 6.28f) * 70.0f * loopEnv;
-            setGaze(cx, cy);
-            SDL_Texture* tex = getTex(i, isBack);
-            SDL_SetTextureAlphaMod(tex, (depthPass == 0) ? 160 : ((depthPass == 1) ? 205 : 255));
-            int sz = static_cast<int>(((i == 7) ? 128 : 88) * sc);
-            bool faceLeft = (std::cos(p * 9.42f) * 85.0f + (leftToRight ? 120.0f : -120.0f)) < 0.0f;
-            SDL_Rect dst{static_cast<int>(cx) - sz / 2, static_cast<int>(cy) - sz / 2, sz, sz};
-            SDL_RenderCopyEx(ren, tex, nullptr, &dst, std::sin(t * 6.0f + i) * 10.0, nullptr, faceLeft ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
-            SDL_SetTextureAlphaMod(tex, 255);
-        }
-    }
-
-    if ((fxMask & (1u << 13)) && bank.sprites.at(14)) {
-        uint32_t strikeIdx = nowMs / 3200;
-        uint32_t phase     = nowMs % 3200;
-        int targetPass     = static_cast<int>((strikeIdx * 5 + 1) % 3);
-        if (depthPass == targetPass && phase < 190) {
-            bool isBack = (depthPass < 2);
-            SDL_Texture* lTex = ((phase < 95) || !bank.sprites.at(15)) ? getTex(14, isBack) : getTex(15, isBack);
-            SDL_SetTextureAlphaMod(lTex, (depthPass == 0) ? 135 : ((depthPass == 1) ? 190 : 255));
-            int shiftX = ((strikeIdx % 3) == 0) ? 0 : (((strikeIdx % 3) == 1) ? -90 : 95);
-            SDL_Rect dst{shiftX, 0, BASE_CANVAS_W, BASE_CANVAS_H};
-            SDL_RenderCopy(ren, lTex, nullptr, &dst);
-            SDL_SetTextureAlphaMod(lTex, 255);
-        }
-    }
-
-    if ((fxMask & FX_BIT_RAIN) && (depthPass == 1 || depthPass == 2)) {
-        bool isMid = (depthPass == 1);
-        SDL_SetRenderDrawColor(ren, 175, 215, 255, isMid ? 95 : 175);
-        int count = isMid ? 65 : 75;
-        float speedBase = isMid ? 420.0f : 690.0f;
-        int lenY = isMid ? 13 : 24;
-        for (int r = 0; r < count; ++r) {
-            int seed = r + (isMid ? 300 : 0);
-            float speed = speedBase + (seed % 5) * 65.0f;
-            int ry = static_cast<int>(std::fmod(t * speed + seed * 73.0f, static_cast<float>(BASE_CANVAS_H + 60))) - 30;
-            int rx = ((seed * 137 + static_cast<int>(ry * 0.22f)) % BASE_CANVAS_W);
-            SDL_RenderDrawLine(ren, rx, ry, rx + (isMid ? 3 : 6), ry + lenY);
-        }
-    }
-
-    if ((fxMask & FX_BIT_SNOW) && (depthPass == 1 || depthPass == 2)) {
-        bool isMid = (depthPass == 1);
-        int count = isMid ? 60 : 55;
-        for (int f = 0; f < count; ++f) {
-            int seed = f + (isMid ? 500 : 0);
-            float speed = (isMid ? 34.0f : 68.0f) + (seed % 6) * (isMid ? 9.0f : 18.0f);
-            int fy = static_cast<int>(std::fmod(t * speed + seed * 61.0f, static_cast<float>(BASE_CANVAS_H + 30))) - 15;
-            int fx = ((seed * 149) % BASE_CANVAS_W) + static_cast<int>(std::sin(t * (1.1f + (seed % 4) * 0.35f) + seed) * (isMid ? 16.0f : 28.0f));
-            int rad = isMid ? ((seed % 3 == 0) ? 3 : 2) : ((seed % 4 == 0) ? 5 : 4);
-            SDL_SetRenderDrawColor(ren, 245, 250, 255, isMid ? 145 : 235);
-            SDL_Rect flk{fx - rad / 2, fy - rad / 2, rad, rad};
-            SDL_RenderFillRect(ren, &flk);
-        }
-    }
 }
+
 // ==============================================================================
 // Section I. Keyboard Input Routers, Frame Compositor & Engine Main Loop
 // ==============================================================================
@@ -3596,34 +3400,56 @@ static bool handlePackBrowserKeys(SDL_Window* window, SDL_Keycode sym, bool ctrl
     }
     return true;
 }
+// ------------------------------------------------------------------------------
+// 85.1 Format 2-line FX Director OSD banner for selected FX slot (0..24)
+// ------------------------------------------------------------------------------
+static void showFxDirectorOsd(int slotIdx, AppRuntimeState& state)
+{
+    static const std::array<const char*, 25> kFxNames = {
+        "BAT", "NOSE FLY", "MOSQUITO", "BIRD", "WASP",
+        "SPIDER", "BUTTERFLY", "UFO", "COBWEB", "SMOKE / FOG",
+        "GHOST", "SNAKE", "FIRE", "LIGHTNING", "MOUSE",
+        "FIREFLIES", "GRASSHOPPER", "ANTS", "AUTUMN LEAVES", "FIREWORKS",
+        "SNOWFALL", "RAIN", "STARS", "COMETS", "AURORA"
+    };
+    if (slotIdx < 0 || slotIdx >= 25) return;
+    state.isEditingOffsets = false;
+    g_selected_fx_slot     = slotIdx;
+    g_fx_osd_active        = true;
+
+    uint8_t m = g_fx_depth_masks.at(slotIdx);
+    std::string bits;
+    bits.push_back((m & 8) ? '1' : '0');
+    bits.push_back((m & 4) ? '1' : '0');
+    bits.push_back((m & 2) ? '1' : '0');
+    bits.push_back((m & 1) ? '1' : '0');
+
+    std::string activeNames;
+    if (m == 0) {
+        activeNames = "OFF";
+    } else {
+        if (m & 1) activeNames += "SKY+";
+        if (m & 2) activeNames += "FAR+";
+        if (m & 4) activeNames += "MID+";
+        if (m & 8) activeNames += "FRT+";
+        if (!activeNames.empty()) activeNames.pop_back();
+    }
+
+    std::array<char, 96> buf{};
+    std::snprintf(buf.data(), buf.size(), "%s [%02d/25] %s [%s]",
+                  kFxNames.at(slotIdx), slotIdx + 1, bits.c_str(), activeNames.c_str());
+    bool prevOsd = osd.enabled;
+    osd.enabled = true;
+    showOsd(buf.data(), 0, true);
+    osd.enabled = prevOsd;
+}
 
 // ------------------------------------------------------------------------------
-// 86. Handle memory banks, slot recall/copy, fade timing & FX/sky/fog toggles
+// 86. Handle memory banks, slot recall/copy, fade timing & Alt+1..4 FX layers
 // ------------------------------------------------------------------------------
 static bool handleMemoryAndFxKeys(SDL_Window* window, SDL_Keycode sym, bool shiftDown, bool ctrlDown, bool altDown, FaceAppConfig& cfg, AppRuntimeState& state)
 {
     std::array<char, 96> buf{};
-    if ((altDown || (ctrlDown && shiftDown)) && (sym == SDLK_s || sym == SDLK_c || sym == SDLK_a || sym == SDLK_r || sym == SDLK_w)) {
-        uint32_t bit = 0;
-        const char* lbl = "";
-        if (sym == SDLK_s) { bit = FX_BIT_STARS; lbl = "STARS"; }
-        else if (sym == SDLK_c) { bit = FX_BIT_COMET; lbl = "COMETS & SHOOTING STARS"; }
-        else if (sym == SDLK_a) { bit = FX_BIT_AURORA; lbl = "NORTHERN LIGHTS (AURORA)"; }
-        else if (sym == SDLK_r) { bit = FX_BIT_RAIN; lbl = "RAIN"; }
-        else if (sym == SDLK_w) { bit = FX_BIT_SNOW; lbl = "SNOWFALL"; }
-        state.manualFxMask ^= bit;
-        std::snprintf(buf.data(), buf.size(), "WEATHER/SKY %s: %s [S=SAVE]", lbl, (state.manualFxMask & bit) ? "ON" : "OFF");
-        showOsd(buf.data(), 2200, false);
-        return true;
-    }
-    if (ctrlDown && shiftDown && (sym == SDLK_1 || sym == SDLK_2 || sym == SDLK_3)) {
-        uint32_t bit = (sym == SDLK_1) ? FX_BIT_FOG_BACK : ((sym == SDLK_2) ? FX_BIT_FOG_MID : FX_BIT_FOG_FRONT);
-        const char* lbl = (sym == SDLK_1) ? "FOG BACK" : ((sym == SDLK_2) ? "FOG MID" : "FOG FRONT");
-        state.manualFxMask ^= bit;
-        std::snprintf(buf.data(), buf.size(), "LAYER %s: %s [S=SAVE]", lbl, (state.manualFxMask & bit) ? "ON" : "OFF");
-        showOsd(buf.data(), 2200, false);
-        return true;
-    }
     if (sym == SDLK_PAGEUP || sym == SDLK_PAGEDOWN) {
         state.memoryBank = (sym == SDLK_PAGEUP) ? ((state.memoryBank >= MAX_MEMORY_BANK) ? 0 : state.memoryBank + 1)
                                                 : ((state.memoryBank <= 0) ? MAX_MEMORY_BANK : state.memoryBank - 1);
@@ -3651,16 +3477,24 @@ static bool handleMemoryAndFxKeys(SDL_Window* window, SDL_Keycode sym, bool shif
         int keyDigit = (sym - SDLK_0);
         if (ctrlDown && altDown && keyDigit == 0) {
             state.manualFxMask = 0;
-            showOsd("FX, SKY & FOG OVERLAYS: ALL OFF", 2000, false);
+            g_fx_depth_masks.fill(0);
+            g_fx_osd_active = false;
+            showOsd("ALL FX & DEPTH LAYERS: OFF", 2000, false);
+            return true;
+        }
+        if (altDown && (keyDigit == 0 || (keyDigit >= 1 && keyDigit <= 4))) {
+            int slot = (g_selected_fx_slot >= 0 && g_selected_fx_slot < 25) ? g_selected_fx_slot : 0;
+            if (keyDigit == 0) {
+                g_fx_depth_masks.at(slot) = 0;
+            } else {
+                uint8_t bit = static_cast<uint8_t>(1u << (keyDigit - 1));
+                g_fx_depth_masks.at(slot) ^= bit;
+            }
+            showFxDirectorOsd(slot, state);
             return true;
         }
         if (altDown) {
-            int fxIdx = (keyDigit == 0) ? 9 : (keyDigit - 1);
-            static const std::array<const char*, 10> kFxNames = {"BAT", "FLY", "MOSQUITO", "BIRD", "WASP", "SPIDER", "BUTTERFLY", "UFO", "COBWEB", "FOG BACK"};
-            state.manualFxMask ^= (1u << fxIdx);
-            std::snprintf(buf.data(), buf.size(), "FX %s: %s", kFxNames.at(fxIdx), (state.manualFxMask & (1u << fxIdx)) ? "ON" : "OFF");
-            showOsd(buf.data(), 2000, false);
-            return true;
+            return false;
         }
         int targetSlot = resolveBankKeySlot(state.memoryBank, keyDigit);
         state.browseMemorySlot = targetSlot;
@@ -3681,6 +3515,7 @@ static bool handleMemoryAndFxKeys(SDL_Window* window, SDL_Keycode sym, bool shif
     }
     return false;
 }
+
 // ------------------------------------------------------------------------------
 // 87. Handle Ctrl+TAB (switch Left/Right char), TAB+Arrows (move) & Alt (scale)
 // ------------------------------------------------------------------------------
@@ -3787,31 +3622,19 @@ static void handleAssetAndStyleKeys(SDL_Keycode sym, bool shiftDown, bool ctrlDo
             break;
         }
         case SDLK_b: {
-            if (ctrlDown) { state.manualFxMask = 0; showOsd("FX, SKY & FOG OVERLAYS: ALL OFF", 2000, false); break; }
-            constexpr uint32_t kAllFogMask = FX_BIT_FOG_BACK | FX_BIT_FOG_MID | FX_BIT_FOG_FRONT;
-            int curMode = (state.manualFxMask == kAllFogMask) ? 22 : -1;
-            if (curMode < 0) {
-                for (int i = 0; i < 22; ++i) {
-                    if (state.manualFxMask == (1u << i)) curMode = i;
-                }
-            }
-            int nextMode = curMode + (shiftDown ? -1 : 1);
-            if (nextMode > 22 || nextMode < 0) {
+            if (ctrlDown) {
                 state.manualFxMask = 0;
-                showOsd("FX & FOG OVERLAY: OFF [00/23]", 2000, false);
-            } else if (nextMode == 22) {
-                state.manualFxMask = kAllFogMask;
-                showOsd("FX [23/23]: ALL 3 FOG LAYERS", 2400, false);
-            } else {
-                state.manualFxMask = (1u << nextMode);
-                static const std::array<const char*, 22> kAllFx = {
-                    "BAT", "FLY", "MOSQUITO", "BIRD", "WASP", "SPIDER", "BUTTERFLY", "UFO", "COBWEB", "FOG BACK",
-                    "GHOST", "SNAKE", "FIRE", "LIGHTNING", "MOUSE", "STARS", "COMETS", "AURORA", "RAIN", "SNOWFALL",
-                    "FOG MID", "FOG FRONT"
-                };
-                std::snprintf(buf.data(), buf.size(), "FX [%02d/23]: %s", nextMode + 1, kAllFx.at(nextMode));
-                showOsd(buf.data(), 2400, false);
+                g_fx_depth_masks.fill(0);
+                g_fx_osd_active = false;
+                showOsd("ALL FX & DEPTH LAYERS: OFF", 2000, false);
+                break;
             }
+            if (!g_fx_osd_active || g_selected_fx_slot < 0) {
+                if (g_selected_fx_slot < 0) g_selected_fx_slot = 0;
+            } else {
+                g_selected_fx_slot = (g_selected_fx_slot + (shiftDown ? 24 : 1)) % 25;
+            }
+            showFxDirectorOsd(g_selected_fx_slot, state);
             break;
         }
         case SDLK_a: {
@@ -4117,6 +3940,62 @@ static void handleKeyboardEvent(SDL_Window* window, SDL_Keycode sym, SDL_Keymod 
     bool altDown   = (mod & KMOD_ALT) != 0;
     std::array<char, 96> buf{};
 
+    auto clearFxEmitterParticles = [&]() {
+        for (const auto& a : g_stage.actorList()) {
+            if (a && a->groupId == 100) {
+                a->alive = false;
+            }
+        }
+    };
+
+    if (ctrlDown && (sym == SDLK_EQUALS || sym == SDLK_PLUS || sym == SDLK_KP_PLUS || sym == SDLK_MINUS || sym == SDLK_KP_MINUS)) {
+        bool inc = (sym == SDLK_EQUALS || sym == SDLK_PLUS || sym == SDLK_KP_PLUS);
+        if (inc) {
+            g_critter_swarm_count = (g_critter_swarm_count == 1) ? 3 : std::min(50, g_critter_swarm_count + 4);
+        } else {
+            g_critter_swarm_count = (g_critter_swarm_count <= 3) ? 1 : std::max(1, g_critter_swarm_count - 4);
+        }
+        bool prevOsd = osd.enabled;
+        osd.enabled = true;
+        std::snprintf(buf.data(), buf.size(), "CRITTER / SWARM COUNT: %d", g_critter_swarm_count);
+        showOsd(buf.data(), 2200, false);
+        osd.enabled = prevOsd;
+        return;
+    }
+    if (ctrlDown && (sym == SDLK_F9 || sym == SDLK_k)) {
+        g_stage_fx_enabled = !g_stage_fx_enabled;
+        if (!g_stage_fx_enabled) {
+            clearFxEmitterParticles();
+        }
+        bool prevOsd = osd.enabled;
+        osd.enabled = true;
+        showOsd(g_stage_fx_enabled ? "GLOWING EMBERS / PARTICLES: ON" : "GLOWING EMBERS / PARTICLES: OFF", 2400, false);
+        osd.enabled = prevOsd;
+        return;
+    }
+    if (ctrlDown && (sym == SDLK_F10 || sym == SDLK_g)) {
+        static const std::array<const char*, 10> kModeNames = {
+            "STILL", "GRAVITY FALL", "RISING PLUME", "PERLIN SWIRL", "SWARM FLOCK", "GROUND CRAWL", "AUDIO PULSE", "AUTUMN LEAVES", "FIREWORKS", "FIREFLIES"
+        };
+        g_stage_fx_enabled = true;
+        g_stage_fx_mode = (g_stage_fx_mode + 1) % 10;
+        clearFxEmitterParticles();
+        bool prevOsd = osd.enabled;
+        osd.enabled = true;
+        std::snprintf(buf.data(), buf.size(), "PHYSICS MODE: %s", kModeNames.at(g_stage_fx_mode));
+        showOsd(buf.data(), 2400, false);
+        osd.enabled = prevOsd;
+        return;
+    }
+    if (ctrlDown && (sym == SDLK_LEFT || sym == SDLK_RIGHT || sym == SDLK_DOWN)) {
+        if (sym == SDLK_LEFT)       g_parallax_vel_x = 48;
+        else if (sym == SDLK_RIGHT) g_parallax_vel_x = 208;
+        else { g_parallax_vel_x = 128; g_parallax_vel_y = 128; }
+        std::snprintf(buf.data(), buf.size(), "PARALLAX VEL X:%u Y:%u (128=STOP)", g_parallax_vel_x, g_parallax_vel_y);
+        showOsd(buf.data(), 2000, false);
+        return;
+    }
+
     if (handleCameraViewfinderKeys(window, sym, state)) return;
     if (handleFlatImportKeys(window, sym, shiftDown, cfg, state)) return;
     if (handlePackBrowserKeys(window, sym, ctrlDown, cfg, state)) return;
@@ -4132,6 +4011,9 @@ static void handleKeyboardEvent(SDL_Window* window, SDL_Keycode sym, SDL_Keymod 
                 state.showHelpOverlay = false;
             } else if (state.showTelemetry) {
                 state.showTelemetry = false;
+            } else if (g_fx_osd_active) {
+                g_fx_osd_active = false;
+                hideOsd();
             } else if (state.isEditingOffsets) {
                 state.isEditingOffsets = false;
                 hideOsd();
@@ -4464,22 +4346,16 @@ static void renderCharacterLayers(
 }
 
 // ------------------------------------------------------------------------------
-// 93. Render foreground parallax/fire/fog, UI overlays and master blackout
+// 93. Render foreground parallax/Stage FRONT layer, UI overlays & master blackout
 // ------------------------------------------------------------------------------
 static void renderForegroundAndOverlays(
     SDL_Renderer* renderer, const FaceAppConfig& cfg, const AppRuntimeState& state,
     const SDL_Rect& bgVp, const SDL_Rect& faceVp, float scale,
     int outW, int outH, uint32_t reqFxMask, bool hideAll, uint8_t transitionFadeAlpha, uint32_t nowMs)
 {
+    (void)reqFxMask;
     SDL_RenderSetScale(renderer, 1.0f, 1.0f);
     SDL_RenderSetViewport(renderer, &bgVp);
-    if (!hideAll && (reqFxMask & (1u << 12)) && state.fxBank.sprites.at(12)) {
-        float t = static_cast<float>(nowMs) * 0.001f;
-        SDL_Texture* fTex = (((nowMs / 160) % 2) == 0 || !state.fxBank.sprites.at(13)) ? state.fxBank.sprites.at(12) : state.fxBank.sprites.at(13);
-        int swayX = static_cast<int>(std::sin(t * 3.2f) * (bgVp.w * 0.025f)) - static_cast<int>(bgVp.w * 0.04f);
-        SDL_Rect fireDst{swayX, static_cast<int>(bgVp.h * 0.12f), static_cast<int>(bgVp.w * 1.08f), bgVp.h};
-        SDL_RenderCopy(renderer, fTex, nullptr, &fireDst);
-    }
     if (!hideAll && state.parallaxBg.frontLayer) {
         int tw = 0, th = 0;
         SDL_QueryTexture(state.parallaxBg.frontLayer, nullptr, nullptr, &tw, &th);
@@ -4487,11 +4363,25 @@ static void renderForegroundAndOverlays(
         SDL_Rect full{0, 0, bgVp.w, bgVp.h + 2};
         SDL_RenderCopy(renderer, state.parallaxBg.frontLayer, &src, &full);
     }
-    if (!hideAll && (reqFxMask & FX_BIT_FOG_FRONT) && state.fxBank.sprites.at(9)) {
-        float t = static_cast<float>(nowMs) * 0.001f;
-        renderSeamlessFogLayer(renderer, state.fxBank.sprites.at(9), t * 42.0f + 90.0f, bgVp.w, bgVp.h, 235);
+
+    float fxScaleX = (static_cast<float>(outW) / static_cast<float>(BASE_CANVAS_W)) * state.fxLayer.scale;
+    float fxScaleY = (static_cast<float>(outH) / static_cast<float>(BASE_CANVAS_H)) * state.fxLayer.scale;
+    int fxW = static_cast<int>(std::round(BASE_CANVAS_W * fxScaleX));
+    int fxH = static_cast<int>(std::round(BASE_CANVAS_H * fxScaleY));
+    SDL_Rect fxVp{
+        (outW - fxW) / 2 + static_cast<int>(std::round(state.fxLayer.offsetX * scale)),
+        (outH - fxH) / 2 + static_cast<int>(std::round(state.fxLayer.offsetY * scale)),
+        fxW,
+        fxH
+    };
+    SDL_RenderSetScale(renderer, 1.0f, 1.0f);
+    SDL_RenderSetViewport(renderer, &fxVp);
+    SDL_RenderSetScale(renderer, fxScaleX, fxScaleY);
+    if (!hideAll) {
+        g_stage.renderLayer(renderer, DepthLayer::FRONT, 1.0f);
     }
 
+    SDL_RenderSetScale(renderer, 1.0f, 1.0f);
     SDL_RenderSetViewport(renderer, &faceVp);
     SDL_RenderSetScale(renderer, scale, scale);
     renderBrowsersAndTelemetry(renderer, cfg, state);
@@ -4524,8 +4414,8 @@ static void renderCompositedFrame(
     SDL_Rect faceVp{(outW - vpW) / 2, (outH - vpH) / 2, vpW, vpH};
 
     SDL_SetRenderTarget(renderer, nullptr);
-    SDL_RenderSetViewport(renderer, nullptr);
     SDL_RenderSetScale(renderer, 1.0f, 1.0f);
+    SDL_RenderSetViewport(renderer, nullptr);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
@@ -4547,35 +4437,37 @@ static void renderCompositedFrame(
     SDL_RenderSetViewport(renderer, &bgVp);
     if (!hideAll) {
         renderDepthBackdropLayers(renderer, state.parallaxBg, reqFxMask, nowMs, bgW, bgH);
-        float t = static_cast<float>(nowMs) * 0.001f;
-        if (reqFxMask & FX_BIT_FOG_BACK) {
-            SDL_Texture* backTex = state.fxBank.fog2 ? state.fxBank.fog2 : (state.fxBank.blurSprites.at(9) ? state.fxBank.blurSprites.at(9) : state.fxBank.sprites.at(9));
-            renderSeamlessFogLayer(renderer, backTex, t * 14.0f, bgW, bgH, 190);
-        }
-        if (reqFxMask & FX_BIT_FOG_MID) {
-            SDL_Texture* midTex = state.fxBank.blurSprites.at(9) ? state.fxBank.blurSprites.at(9) : state.fxBank.sprites.at(9);
-            renderSeamlessFogLayer(renderer, midTex, -t * 26.0f + 180.0f, bgW, bgH, 205);
-        }
     }
 
-    SDL_Rect charVp{faceVp.x + static_cast<int>(std::round(state.fxLayer.offsetX * scale)),
-                    faceVp.y + static_cast<int>(std::round(state.fxLayer.offsetY * scale)), faceVp.w, faceVp.h};
-    SDL_RenderSetViewport(renderer, &charVp);
-    SDL_RenderSetScale(renderer, scale, scale);
+    float fxScaleX = (static_cast<float>(outW) / static_cast<float>(BASE_CANVAS_W)) * state.fxLayer.scale;
+    float fxScaleY = (static_cast<float>(outH) / static_cast<float>(BASE_CANVAS_H)) * state.fxLayer.scale;
+    int fxW = static_cast<int>(std::round(BASE_CANVAS_W * fxScaleX));
+    int fxH = static_cast<int>(std::round(BASE_CANVAS_H * fxScaleY));
+    SDL_Rect fxVp{
+        (outW - fxW) / 2 + static_cast<int>(std::round(state.fxLayer.offsetX * scale)),
+        (outH - fxH) / 2 + static_cast<int>(std::round(state.fxLayer.offsetY * scale)),
+        fxW,
+        fxH
+    };
 
-    bool trackedGaze = false;
-    if (!hideAll && reqFxMask != 0) {
-        renderEffectsAtDepth(renderer, state.fxBank, reqFxMask, 0, nowMs, trackedGaze);
-        renderEffectsAtDepth(renderer, state.fxBank, reqFxMask, 1, nowMs, trackedGaze);
-    }
     if (!hideAll) {
-        renderCharacterLayers(renderer, state, eyesTexture, featuresTexture, reqFace, reqBeard, reqHair, hideMouth, hideBrows);
-        renderEffectsAtDepth(renderer, state.fxBank, reqFxMask, 2, nowMs, trackedGaze);
-    }
-    if (!trackedGaze) clearGazeTarget();
+        SDL_RenderSetScale(renderer, 1.0f, 1.0f);
+        SDL_RenderSetViewport(renderer, &fxVp);
+        SDL_RenderSetScale(renderer, fxScaleX, fxScaleY);
+        g_stage.renderLayer(renderer, DepthLayer::FAR, 0.25f);
+        g_stage.renderLayer(renderer, DepthLayer::MID, 0.65f);
 
+        SDL_RenderSetScale(renderer, 1.0f, 1.0f);
+        SDL_RenderSetViewport(renderer, &faceVp);
+        SDL_RenderSetScale(renderer, scale, scale);
+        renderCharacterLayers(renderer, state, eyesTexture, featuresTexture, reqFace, reqBeard, reqHair, hideMouth, hideBrows);
+    }
+
+    SDL_RenderSetScale(renderer, 1.0f, 1.0f);
+    SDL_RenderSetViewport(renderer, nullptr);
     renderForegroundAndOverlays(renderer, cfg, state, bgVp, faceVp, scale, outW, outH, reqFxMask, hideAll, transitionFadeAlpha, nowMs);
 }
+
 // ------------------------------------------------------------------------------
 // 95. Update DMX connection state, online/offline transitions & crossfade alpha
 // ------------------------------------------------------------------------------
@@ -4895,66 +4787,234 @@ static void stepProceduralAnimation(
     SDL_UpdateTexture(eyesTexture, nullptr, eyeTft.updateArgbBuffer(true), BASE_CANVAS_W * sizeof(uint32_t));
     SDL_UpdateTexture(featuresTexture, nullptr, tft.updateArgbBuffer(true), BASE_CANVAS_W * sizeof(uint32_t));
 }
+// ------------------------------------------------------------------------------
+// 97.5 Update all 25 FX slots, 4-bit depth masks, Stage actors & gaze target
+// ------------------------------------------------------------------------------
+static uint32_t stepStageAndFxActors(AppRuntimeState& state, float stageDt, uint32_t frameStart)
+{
+    g_stage.setCameraVelocityFromDmx(g_parallax_vel_x, g_parallax_vel_y, 320.0f);
+    if (g_fx_video.isOpen()) {
+        g_fx_video.updateFrame(frameStart);
+    }
 
+    SDL_Texture* texFar   = state.fxBank.fog2 ? state.fxBank.fog2 : (state.fxBank.blurSprites.at(9) ? state.fxBank.blurSprites.at(9) : state.fxBank.sprites.at(9));
+    SDL_Texture* texMid   = state.fxBank.blurSprites.at(9) ? state.fxBank.blurSprites.at(9) : state.fxBank.sprites.at(9);
+    SDL_Texture* texFront = state.fxBank.sprites.at(9);
+
+    if (!g_cloud_actor) {
+        auto a = std::make_unique<SeamlessFogActor>(state.parallaxBg.clouds, &g_stage_noise, DepthLayer::SKY, 10.0f);
+        a->perlinSwayX = 6.0f; a->perlinSwayY = 3.0f; a->tileScaleW = 1.0f; a->periodicTex = false;
+        g_cloud_actor = static_cast<SeamlessFogActor*>(g_stage.addActor(std::move(a)));
+    }
+    if (!g_fog_back_actor) {
+        auto a = std::make_unique<SeamlessFogActor>(texFar, &g_stage_noise, DepthLayer::FAR, 14.0f);
+        a->perlinSwayX = 12.0f; a->perlinSwayY = 8.0f; a->periodicTex = true;
+        g_fog_back_actor = static_cast<SeamlessFogActor*>(g_stage.addActor(std::move(a)));
+    }
+    if (!g_fog_mid_actor) {
+        auto a = std::make_unique<SeamlessFogActor>(texMid, &g_stage_noise, DepthLayer::MID, -26.0f);
+        a->perlinSwayX = 24.0f; a->perlinSwayY = 14.0f; a->periodicTex = true;
+        g_fog_mid_actor = static_cast<SeamlessFogActor*>(g_stage.addActor(std::move(a)));
+    }
+    if (!g_fog_front_actor) {
+        auto a = std::make_unique<SeamlessFogActor>(texFront, &g_stage_noise, DepthLayer::FRONT, 42.0f);
+        a->perlinSwayX = 36.0f; a->perlinSwayY = 18.0f; a->periodicTex = true;
+        g_fog_front_actor = static_cast<SeamlessFogActor*>(g_stage.addActor(std::move(a)));
+    }
+    if (!g_ufo_actor)       g_ufo_actor       = static_cast<UfoActor*>(g_stage.addActor(std::make_unique<UfoActor>(state.fxBank.sprites.at(7), g_default_particle_tex)));
+    if (!g_nose_fly_actor)  g_nose_fly_actor  = static_cast<NoseFlyActor*>(g_stage.addActor(std::make_unique<NoseFlyActor>(state.fxBank.sprites.at(1), state.fxBank.animSprites.at(1))));
+    if (!g_spider_actor)    g_spider_actor    = static_cast<SpiderActor*>(g_stage.addActor(std::make_unique<SpiderActor>(state.fxBank.sprites.at(5), state.fxBank.animSprites.at(5), 515.0f)));
+    if (!g_snake_actor)     g_snake_actor     = static_cast<SnakeActor*>(g_stage.addActor(std::make_unique<SnakeActor>(state.fxBank.sprites.at(11), state.fxBank.animSprites.at(11))));
+    if (!g_lightning_actor) g_lightning_actor = static_cast<LightningActor*>(g_stage.addActor(std::make_unique<LightningActor>(state.fxBank.sprites.at(14), state.fxBank.sprites.at(15))));
+    if (!g_fire_actor)      g_fire_actor      = static_cast<FireActor*>(g_stage.addActor(std::make_unique<FireActor>(state.fxBank.sprites.at(12), state.fxBank.sprites.at(13))));
+    if (!g_cobweb_actor)    g_cobweb_actor    = static_cast<StaticPropActor*>(g_stage.addActor(std::make_unique<StaticPropActor>(state.fxBank.sprites.at(8), DepthLayer::MID)));
+
+    auto topLayer = [](uint8_t m, DepthLayer def) -> DepthLayer {
+        if (m & 8) return DepthLayer::FRONT;
+        if (m & 4) return DepthLayer::MID;
+        if (m & 2) return DepthLayer::FAR;
+        if (m & 1) return DepthLayer::SKY;
+        return def;
+    };
+
+    uint8_t fogMask  = g_fx_depth_masks.at(9);
+    bool hasBgClouds = (state.curBgScene > 0 && state.parallaxBg.clouds != nullptr);
+    g_cloud_actor->texture         = (fogMask & 1) ? texFar : state.parallaxBg.clouds;
+    g_cloud_actor->targetAlpha     = (fogMask & 1) ? 165 : (hasBgClouds ? 255 : 0);
+    g_fog_back_actor->texture      = texFar;
+    g_fog_back_actor->targetAlpha  = ((fogMask & 2) || (state.curFxMask & FX_BIT_FOG_BACK)) ? 185 : 0;
+    g_fog_mid_actor->texture       = texMid;
+    g_fog_mid_actor->targetAlpha   = ((fogMask & 4) || (state.curFxMask & FX_BIT_FOG_MID)) ? 205 : 0;
+    g_fog_front_actor->texture     = texFront;
+    g_fog_front_actor->targetAlpha = ((fogMask & 8) || (state.curFxMask & FX_BIT_FOG_FRONT)) ? 230 : 0;
+
+    g_ufo_actor->texture           = state.fxBank.sprites.at(7);
+    g_ufo_actor->beamGlow          = g_default_particle_tex;
+    g_ufo_actor->depthMask         = (g_fx_depth_masks.at(7) != 0) ? g_fx_depth_masks.at(7) : ((state.curFxMask & (1u << 7)) ? 4 : 0);
+
+    g_nose_fly_actor->texWingsSpread = state.fxBank.sprites.at(1);
+    g_nose_fly_actor->texWingsFolded = state.fxBank.animSprites.at(1);
+    g_nose_fly_actor->noseX          = 300.0f + static_cast<float>(state.noseLayer.offsetX);
+    g_nose_fly_actor->noseY          = 444.0f + static_cast<float>(state.noseLayer.offsetY);
+    g_nose_fly_actor->active         = (g_fx_depth_masks.at(1) != 0) || ((state.curFxMask & (1u << 1)) != 0);
+    if (g_fx_depth_masks.at(1)) g_nose_fly_actor->layer = topLayer(g_fx_depth_masks.at(1), DepthLayer::FRONT);
+
+    g_spider_actor->tex1    = state.fxBank.sprites.at(5);
+    g_spider_actor->tex2    = state.fxBank.animSprites.at(5);
+    g_spider_actor->active  = (g_fx_depth_masks.at(5) != 0) || ((state.curFxMask & (1u << 5)) != 0);
+    if (g_fx_depth_masks.at(5)) g_spider_actor->layer = topLayer(g_fx_depth_masks.at(5), DepthLayer::FRONT);
+
+    g_snake_actor->tex1     = state.fxBank.sprites.at(11);
+    g_snake_actor->tex2     = state.fxBank.animSprites.at(11);
+    g_snake_actor->active   = (g_fx_depth_masks.at(11) != 0) || ((state.curFxMask & (1u << 11)) != 0);
+    if (g_fx_depth_masks.at(11)) g_snake_actor->layer = topLayer(g_fx_depth_masks.at(11), DepthLayer::FRONT);
+
+    g_lightning_actor->tex1   = state.fxBank.sprites.at(14);
+    g_lightning_actor->tex2   = state.fxBank.sprites.at(15);
+    g_lightning_actor->active = (g_fx_depth_masks.at(13) != 0) || ((state.curFxMask & (1u << 13)) != 0);
+
+    g_fire_actor->tex1      = state.fxBank.sprites.at(12);
+    g_fire_actor->tex2      = state.fxBank.sprites.at(13);
+    g_fire_actor->active    = (g_fx_depth_masks.at(12) != 0) || ((state.curFxMask & (1u << 12)) != 0);
+    if (g_fx_depth_masks.at(12)) g_fire_actor->layer = topLayer(g_fx_depth_masks.at(12), DepthLayer::FRONT);
+
+    g_cobweb_actor->texture = state.fxBank.sprites.at(8);
+    g_cobweb_actor->active  = (g_fx_depth_masks.at(8) != 0) || ((state.curFxMask & (1u << 8)) != 0);
+    if (g_fx_depth_masks.at(8)) g_cobweb_actor->layer = topLayer(g_fx_depth_masks.at(8), DepthLayer::MID);
+    struct CritterSpec { int spr; int slot; uint32_t bit; int maxN; float sz; EmitterPhysicsMode mode; float turb; DepthLayer lyr; uint8_t alpha; uint32_t ms; };
+    static constexpr std::array<CritterSpec, 7> kSwarms = {{
+        {0,  0,  (1u << 0),  16, 0.68f, EmitterPhysicsMode::SWARM_FLOCK,  1.25f, DepthLayer::FRONT, 255, 85},
+        {2,  2,  (1u << 2),  30, 0.16f, EmitterPhysicsMode::SWARM_FLOCK,  1.65f, DepthLayer::FRONT, 240, 45},
+        {3,  3,  (1u << 3),  12, 0.45f, EmitterPhysicsMode::SWARM_FLOCK,  1.05f, DepthLayer::MID,   235, 140},
+        {4,  4,  (1u << 4),  20, 0.26f, EmitterPhysicsMode::SWARM_FLOCK,  1.45f, DepthLayer::FRONT, 255, 50},
+        {6,  6,  (1u << 6),  18, 0.36f, EmitterPhysicsMode::PERLIN_SWIRL, 0.90f, DepthLayer::FRONT, 255, 130},
+        {10, 10, (1u << 10),  4, 0.55f, EmitterPhysicsMode::PERLIN_SWIRL, 0.65f, DepthLayer::FRONT, 175, 250},
+        {16, 14, (1u << 14), 12, 0.48f, EmitterPhysicsMode::GROUND_CRAWL, 1.35f, DepthLayer::FRONT, 255, 95}
+    }};
+
+    for (const auto& s : kSwarms) {
+        SDL_Texture* f1 = state.fxBank.sprites.at(s.spr);
+        SDL_Texture* f2 = state.fxBank.animSprites.at(s.spr);
+        if (s.spr == 0 && f1 && f2 && state.fxBank.bat3) g_critter_emitters.at(0).setAnimatedFrames({f1, f2, state.fxBank.bat3, f2}, 85);
+        else if (f1 && f2)                               g_critter_emitters.at(s.spr).setAnimatedFrames({f1, f2}, s.ms);
+        else                                             g_critter_emitters.at(s.spr).setSpriteSource(f1);
+
+        uint8_t dm = g_fx_depth_masks.at(s.slot);
+        bool on    = (dm != 0) || ((state.curFxMask & s.bit) != 0);
+        int cnt    = on ? ((g_critter_swarm_count <= 1) ? 1 : std::min(s.maxN, g_critter_swarm_count)) : 0;
+        EmitterDmxParams p{cnt, s.sz, s.mode, s.turb, s.lyr, -1.0f, -1.0f, 255, 255, 255, s.alpha, true, (s.spr != 16), true, dm};
+        g_critter_emitters.at(s.spr).updateFromDmx(g_stage, p, stageDt);
+    }
+
+    if (state.fxBank.fireflyTex.at(0) && state.fxBank.fireflyTex.at(1)) g_firefly_emitter.setAnimatedFrames({state.fxBank.fireflyTex.at(0), state.fxBank.fireflyTex.at(1)}, 65);
+    g_firefly_emitter.setGlowTexture(g_default_particle_tex);
+    g_firefly_emitter.updateFromDmx(g_stage, {g_fx_depth_masks.at(15) ? std::max(8, g_critter_swarm_count * 2) : 0, 0.34f, EmitterPhysicsMode::FIREFLIES, 0.95f, DepthLayer::FRONT, -1.0f, -1.0f, 255, 255, 255, 255, true, false, true, g_fx_depth_masks.at(15)}, stageDt);
+
+    if (state.fxBank.grasshopperTex.at(0) && state.fxBank.grasshopperTex.at(1)) g_grasshopper_emitter.setAnimatedFrames({state.fxBank.grasshopperTex.at(0), state.fxBank.grasshopperTex.at(1)}, 120);
+    g_grasshopper_emitter.updateFromDmx(g_stage, {g_fx_depth_masks.at(16) ? std::max(4, g_critter_swarm_count) : 0, 0.36f, EmitterPhysicsMode::SWARM_FLOCK, 1.35f, DepthLayer::FRONT, -1.0f, -1.0f, 255, 255, 255, 255, true, false, true, g_fx_depth_masks.at(16)}, stageDt);
+
+    if (state.fxBank.antTex.at(0) && state.fxBank.antTex.at(1)) g_ant_emitter.setAnimatedFrames({state.fxBank.antTex.at(0), state.fxBank.antTex.at(1)}, 80);
+    g_ant_emitter.updateFromDmx(g_stage, {g_fx_depth_masks.at(17) ? std::max(6, g_critter_swarm_count) : 0, 0.28f, EmitterPhysicsMode::GROUND_CRAWL, 1.15f, DepthLayer::FRONT, -1.0f, -1.0f, 255, 255, 255, 255, true, false, true, g_fx_depth_masks.at(17)}, stageDt);
+
+    g_leaves_emitter.setSpriteSource(state.fxBank.leafTex ? state.fxBank.leafTex : g_default_particle_tex);
+    g_leaves_emitter.updateFromDmx(g_stage, {g_fx_depth_masks.at(18) ? 28 : 0, 0.52f, EmitterPhysicsMode::AUTUMN_LEAVES, 1.0f, DepthLayer::FRONT, -1.0f, -1.0f, 255, 255, 255, 240, false, false, false, g_fx_depth_masks.at(18)}, stageDt);
+
+    g_fireworks_emitter.setSpriteSource(g_default_particle_tex);
+    g_fireworks_emitter.updateFromDmx(g_stage, {g_fx_depth_masks.at(19) ? 44 : 0, 0.95f, EmitterPhysicsMode::FIREWORKS, 1.0f, DepthLayer::FAR, -1.0f, -1.0f, 255, 255, 255, 255, false, false, false, g_fx_depth_masks.at(19)}, stageDt);
+
+    SDL_Texture* snowTex = state.fxBank.snowflakeTex ? state.fxBank.snowflakeTex : g_default_particle_tex;
+    g_snow_mid_emitter.setSpriteSource(snowTex);
+    g_snow_front_emitter.setSpriteSource(snowTex);
+    uint8_t snM = g_fx_depth_masks.at(20);
+    g_snow_mid_emitter.updateFromDmx(g_stage, {(snM & 3) ? 45 : 0, 0.34f, EmitterPhysicsMode::GRAVITY_FALL, 0.45f, DepthLayer::MID, -1.0f, -1.0f, 220, 238, 255, 175}, stageDt);
+    g_snow_front_emitter.updateFromDmx(g_stage, {((snM & 12) || (snM == 0 && (state.curFxMask & FX_BIT_SNOW))) ? 40 : 0, 0.62f, EmitterPhysicsMode::GRAVITY_FALL, 0.65f, DepthLayer::FRONT, -1.0f, -1.0f, 255, 255, 255, 240}, stageDt);
+
+    uint8_t rnM = g_fx_depth_masks.at(21);
+    g_rain_mid_emitter.updateFromDmx(g_stage, {(rnM & 3) ? 55 : 0, 0.70f, EmitterPhysicsMode::GRAVITY_FALL, 1.8f, DepthLayer::MID, -1.0f, -1.0f, 170, 210, 255, 120}, stageDt);
+    g_rain_front_emitter.updateFromDmx(g_stage, {((rnM & 12) || (rnM == 0 && (state.curFxMask & FX_BIT_RAIN))) ? 55 : 0, 1.15f, EmitterPhysicsMode::GRAVITY_FALL, 2.4f, DepthLayer::FRONT, -1.0f, -1.0f, 200, 230, 255, 200}, stageDt);
+
+    if (g_stage_fx_enabled) {
+        EmitterPhysicsMode fxMode = static_cast<EmitterPhysicsMode>(g_stage_fx_mode);
+        g_fx_emitter.setSpriteSource((fxMode == EmitterPhysicsMode::AUTUMN_LEAVES && state.fxBank.leafTex) ? state.fxBank.leafTex : g_default_particle_tex);
+        g_fx_emitter.updateFromDmx(g_stage, {g_stage_fx_count, (fxMode == EmitterPhysicsMode::AUTUMN_LEAVES) ? 0.55f : 1.0f, fxMode, 1.15f, DepthLayer::FRONT}, stageDt);
+    }
+
+    g_stage.stepAll(stageDt, frameStart);
+
+    float gx = 300.0f, gy = 400.0f, gc = 0.0f;
+    if (g_stage.findPrimaryGazeTarget(gx, gy, gc)) setGazeTarget(gx, gy, gc);
+    else clearGazeTarget();
+
+    uint32_t skyMask = state.curFxMask;
+    if (g_fx_depth_masks.at(22)) skyMask |= FX_BIT_STARS;
+    if (g_fx_depth_masks.at(23)) skyMask |= FX_BIT_COMET;
+    if (g_fx_depth_masks.at(24)) skyMask |= FX_BIT_AURORA;
+    return skyMask;
+}
 // ------------------------------------------------------------------------------
 // 98. Initialize SDL2 renderer, DMX receiver thread and 50 FPS render loop
 // ------------------------------------------------------------------------------
 static void run_face_engine(FaceAppConfig& cfg)
 {
     start_address = cfg.start_channel;
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
-        return;
-    }
+    SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11");
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
+    SDL_SetHint(SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR, "0");
+
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) return;
     IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_WEBP);
 
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0);
+
     int dispIdx = resolveTargetDisplayIndex(cfg);
-    SDL_Rect bounds{0, 0, BASE_CANVAS_W, BASE_CANVAS_H};
-    SDL_GetDisplayBounds(dispIdx, &bounds);
-    SDL_Window* window = SDL_CreateWindow(
-        "MakingFaces",
-        SDL_WINDOWPOS_CENTERED_DISPLAY(dispIdx),
-        SDL_WINDOWPOS_CENTERED_DISPLAY(dispIdx),
-        BASE_CANVAS_W,
-        BASE_CANVAS_H,
-        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
-    );
-    if (!window) {
-        IMG_Quit();
-        SDL_Quit();
-        return;
-    }
-    if (cfg.fullscreen) {
-        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-    }
+    SDL_Window* window = SDL_CreateWindow("MakingFaces", SDL_WINDOWPOS_CENTERED_DISPLAY(dispIdx), SDL_WINDOWPOS_CENTERED_DISPLAY(dispIdx),
+                                          BASE_CANVAS_W, BASE_CANVAS_H, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+    if (!window) { IMG_Quit(); SDL_Quit(); return; }
+    if (cfg.fullscreen) SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
     SDL_ShowCursor(cfg.fullscreen ? SDL_DISABLE : SDL_ENABLE);
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, cfg.smooth_scale ? "linear" : "nearest");
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (!renderer) {
-        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    }
-    if (!renderer) {
-        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
-    }
+    if (!renderer) renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (!renderer) renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     SDL_RendererInfo rInfo{};
-    bool hasVsync = false;
-    if (SDL_GetRendererInfo(renderer, &rInfo) == 0) {
-        bool isGpu = (rInfo.flags & SDL_RENDERER_ACCELERATED) != 0;
-        hasVsync   = (rInfo.flags & SDL_RENDERER_PRESENTVSYNC) != 0;
-        std::printf("[RENDER] Driver: %s | Mode: %s | VSync: %s | MaxTex: %dx%d\n",
-                    rInfo.name ? rInfo.name : "unknown",
-                    isGpu ? "GPU ACCELERATED" : "CPU SOFTWARE",
-                    hasVsync ? "ON" : "OFF",
-                    rInfo.max_texture_width,
-                    rInfo.max_texture_height);
-    }
-
+    bool hasVsync = (SDL_GetRendererInfo(renderer, &rInfo) == 0) && ((rInfo.flags & SDL_RENDERER_PRESENTVSYNC) != 0);
     SDL_Texture* eyesTexture     = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, BASE_CANVAS_W, BASE_CANVAS_H);
     SDL_Texture* featuresTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, BASE_CANVAS_W, BASE_CANVAS_H);
     SDL_SetTextureBlendMode(eyesTexture, SDL_BLENDMODE_BLEND);
     SDL_SetTextureBlendMode(featuresTexture, SDL_BLENDMODE_BLEND);
+
+    {
+        SDL_Surface* pSurf = SDL_CreateRGBSurfaceWithFormat(0, 48, 48, 32, SDL_PIXELFORMAT_ARGB8888);
+        if (pSurf) {
+            uint32_t* px = static_cast<uint32_t*>(pSurf->pixels);
+            for (int y = 0; y < 48; ++y)
+                for (int x = 0; x < 48; ++x) {
+                    float a = std::max(0.0f, 1.0f - std::hypot((x - 23.5f) / 23.5f, (y - 23.5f) / 23.5f));
+                    px[y * 48 + x] = (static_cast<uint32_t>(std::round(a * a * 255.0f)) << 24) | 0x00FFFFFFu;
+                }
+            g_default_particle_tex = SDL_CreateTextureFromSurface(renderer, pSurf);
+            SDL_FreeSurface(pSurf);
+            if (g_default_particle_tex) { SDL_SetTextureBlendMode(g_default_particle_tex, SDL_BLENDMODE_ADD); g_fx_emitter.setSpriteSource(g_default_particle_tex); }
+        }
+        SDL_Surface* rSurf = SDL_CreateRGBSurfaceWithFormat(0, 6, 28, 32, SDL_PIXELFORMAT_ARGB8888);
+        if (rSurf) {
+            uint32_t* px = static_cast<uint32_t*>(rSurf->pixels);
+            for (int y = 0; y < 28; ++y)
+                for (int x = 0; x < 6; ++x) {
+                    uint8_t a = static_cast<uint8_t>(std::round((y / 27.0f) * (1.0f - std::fabs((x - 2.5f) / 2.5f)) * 210.0f));
+                    px[y * 6 + x] = (static_cast<uint32_t>(a) << 24) | 0x00B8DCFFu;
+                }
+            g_rain_drop_tex = SDL_CreateTextureFromSurface(renderer, rSurf);
+            SDL_FreeSurface(rSurf);
+            if (g_rain_drop_tex) { SDL_SetTextureBlendMode(g_rain_drop_tex, SDL_BLENDMODE_BLEND); g_rain_mid_emitter.setSpriteSource(g_rain_drop_tex); g_rain_front_emitter.setSpriteSource(g_rain_drop_tex); }
+        }
+    }
 
     initEyes();
     reloadDynamicEyeBank(cfg.assets_dir);
@@ -4972,8 +5032,7 @@ static void run_face_engine(FaceAppConfig& cfg)
     int dmxSock = init_dmx_socket(cfg.proto, cfg.universe);
     std::array<uint8_t, 512> netBuf{};
     std::mutex netMutex;
-    std::atomic<uint32_t> lastPktMs{0};
-    std::atomic<uint32_t> pktCounter{0};
+    std::atomic<uint32_t> lastPktMs{0}, pktCounter{0};
 
     std::thread netThread([&]() {
         std::array<uint8_t, 1500> raw{};
@@ -4981,72 +5040,54 @@ static void run_face_engine(FaceAppConfig& cfg)
         while (g_running && dmxSock >= 0) {
             ssize_t len = recvfrom(dmxSock, raw.data(), raw.size(), 0, nullptr, nullptr);
             if (len > 0 && parseDmxPacket(cfg.proto, cfg.universe, raw, len, parsed)) {
-                {
-                    std::lock_guard<std::mutex> lk(netMutex);
-                    netBuf = parsed;
-                }
+                { std::lock_guard<std::mutex> lk(netMutex); netBuf = parsed; }
                 lastPktMs.store(millis());
                 pktCounter.fetch_add(1);
             }
         }
     });
-    uint32_t frameDelayMs = 1000 / std::max(1, cfg.fps);
-    uint32_t lastRateTick = millis();
-    uint32_t lastPktCount = 0;
-
+    uint32_t frameDelayMs = 1000 / std::max(1, cfg.fps), lastRateTick = millis(), lastPktCount = 0, prevStageMs = millis();
     while (g_running) {
         uint32_t frameStart = millis();
+        float stageDt = std::min(0.05f, (frameStart - prevStageMs) * 0.001f);
+        prevStageMs = frameStart;
+
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
-            if (ev.type == SDL_QUIT) {
-                g_running = false;
-            } else if (ev.type == SDL_KEYDOWN) {
-                handleKeyboardEvent(window, ev.key.keysym.sym, static_cast<SDL_Keymod>(ev.key.keysym.mod), cfg, state);
-            } else if (ev.type == SDL_MOUSEBUTTONDOWN && ev.button.button == SDL_BUTTON_LEFT && ev.button.clicks == 2 && !state.flatImport.open) {
-                toggleWindowFullscreen(window, state.isFullscreen);
-            }
+            if (ev.type == SDL_QUIT) g_running = false;
+            else if (ev.type == SDL_KEYDOWN) handleKeyboardEvent(window, ev.key.keysym.sym, static_cast<SDL_Keymod>(ev.key.keysym.mod), cfg, state);
+            else if (ev.type == SDL_MOUSEBUTTONDOWN && ev.button.button == SDL_BUTTON_LEFT && ev.button.clicks == 2 && !state.flatImport.open) toggleWindowFullscreen(window, state.isFullscreen);
             handleFlatImportMouse(window, renderer, ev, state.flatImport);
         }
 
         if (frameStart - lastRateTick >= 1000) {
-            uint32_t cur       = pktCounter.load();
-            state.dmxPktRate   = cur - lastPktCount;
-            lastPktCount       = cur;
-            lastRateTick       = frameStart;
+            uint32_t cur = pktCounter.load();
+            state.dmxPktRate = cur - lastPktCount; lastPktCount = cur; lastRateTick = frameStart;
         }
         updateDmxAndFadeState(cfg, state, frameStart, lastPktMs.load());
-        if (state.isDmxActive) {
-            std::lock_guard<std::mutex> lk(netMutex);
-            g_dmx_universe = netBuf;
-        }
+        if (state.isDmxActive) { std::lock_guard<std::mutex> lk(netMutex); g_dmx_universe = netBuf; }
 
-        uint8_t rawMem    = 0;
-        uint8_t rawDimmer = 0;
+        uint8_t rawMem = 0, rawDimmer = 0;
         bool dmxEditOverlay = false;
         resolveActiveLayersAndAudio(window, renderer, cfg, state, frameStart, rawMem, dmxEditOverlay, rawDimmer);
-        if (!state.cameraCapture.open && !state.flatImport.open) {
-            stepProceduralAnimation(cfg, state, frameStart, rawMem, dmxEditOverlay, eyesTexture, featuresTexture);
-        }
+        if (!state.cameraCapture.open && !state.flatImport.open) stepProceduralAnimation(cfg, state, frameStart, rawMem, dmxEditOverlay, eyesTexture, featuresTexture);
 
-        bool hideAll   = state.cameraCapture.open || state.flatImport.open || isFaceHiddenByMemory() || (state.isDmxActive && rawDimmer == 255) || state.manualBlackout;
-        bool hideMouth = isMouthHiddenByMemory() || state.manualHideMouth;
-        bool hideBrows = isBrowsHiddenByMemory() || state.manualHideBrows;
-        renderCompositedFrame(renderer, cfg, state, eyesTexture, featuresTexture, state.curFace, state.curBeard, state.curHair, state.curFxMask, hideAll, hideMouth, hideBrows, state.fadeAlpha, frameStart);
+        uint32_t effFxMask = stepStageAndFxActors(state, stageDt, frameStart);
+        bool hideAll = state.cameraCapture.open || state.flatImport.open || isFaceHiddenByMemory() || (state.isDmxActive && rawDimmer == 255) || state.manualBlackout;
+        renderCompositedFrame(renderer, cfg, state, eyesTexture, featuresTexture, state.curFace, state.curBeard, state.curHair, effFxMask, hideAll, isMouthHiddenByMemory() || state.manualHideMouth, isBrowsHiddenByMemory() || state.manualHideBrows, state.fadeAlpha, frameStart);
 
         if (!hasVsync) {
             uint32_t elapsed = millis() - frameStart;
-            if (elapsed < frameDelayMs) {
-                SDL_Delay(frameDelayMs - elapsed);
-            }
+            if (elapsed < frameDelayMs) SDL_Delay(frameDelayMs - elapsed);
         }
     }
 
-    if (dmxSock >= 0) {
-        close(dmxSock);
-    }
-    if (netThread.joinable()) {
-        netThread.join();
-    }
+    if (dmxSock >= 0) close(dmxSock);
+    if (netThread.joinable()) netThread.join();
+    g_stage.clearActors();
+    g_fx_video.close();
+    if (g_default_particle_tex) { SDL_DestroyTexture(g_default_particle_tex); g_default_particle_tex = nullptr; }
+    if (g_rain_drop_tex)        { SDL_DestroyTexture(g_rain_drop_tex);        g_rain_drop_tex = nullptr; }
     shutdownAudioEngine();
     closeCameraViewfinder(state.cameraCapture);
     destroyFlatImportItems(state.flatImport);

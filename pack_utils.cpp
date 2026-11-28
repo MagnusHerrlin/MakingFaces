@@ -158,12 +158,12 @@ void ensureBaseIni(const std::string& iniPath)
     out << "[network]\nproto=sacn\nuniverse=1\nstart_channel=1\ndmx_mode=39\n\n"
         << "[display]\ndisplay=1\nfps=50\nfullscreen=true\nsmooth_scale=false\nfade_ms=1200\nsave_hold_ms=5000\n\n"
         << "[paths]\nassets_dir=assets\naudio_dir=audio\naudio_monitor=Monitor\n\n"
-        << "[offsets_default]\neye_left_x=0\neye_left_y=-80\neye_right_x=0\neye_right_y=-80\n"
-        << "mouth_x=0\nmouth_y=-90\nmouth_split=0\nnose_x=0\nnose_y=-90\n"
-        << "glasses_x=0\nglasses_y=-90\nglasses_split=0\nbrows_x=0\nbrows_y=-100\nbrows_split=0\n"
-        << "beard_x=0\nbeard_y=-94\nbeard_split=0\nface_x=0\nface_y=-84\n"
-        << "ears_x=0\nears_y=-90\nears_split=0\nhair_x=0\nhair_y=-90\nhat_x=0\nhat_y=-90\n"
-        << "makeup_x=0\nmakeup_y=-84\n"
+        << "[offsets_default]\neye_left_x=0\neye_left_y=0\neye_right_x=0\neye_right_y=0\n"
+        << "mouth_x=0\nmouth_y=0\nmouth_split=0\nnose_x=0\nnose_y=0\n"
+        << "glasses_x=0\nglasses_y=0\nglasses_split=0\nbrows_x=0\nbrows_y=0\nbrows_split=0\n"
+        << "beard_x=0\nbeard_y=0\nbeard_split=0\nface_x=0\nface_y=0\n"
+        << "ears_x=0\nears_y=0\nears_split=0\nhair_x=0\nhair_y=0\nhat_x=0\nhat_y=0\n"
+        << "makeup_x=0\nmakeup_y=0\n"
         << "eye_scale=1\nmouth_scale=1\n";
 }
 
@@ -186,6 +186,58 @@ void appendMacroCombo(const PackMacroSpec& m, const std::string& iniPath)
         << "\nteeth=" << m.teeth << "\nlip_color=" << m.lip_color << "\neyelash=" << m.eyelash
         << "\neye_style=" << m.eye_style << "\niris=" << m.iris << "\neye_bank=" << m.eye_bank
         << "\nanim_id=" << m.anim_id << "\ndual_profile=" << (m.dual_profile ? 1 : 0) << "\n";
+}
+
+void generateStandardSideProfileSuite(const std::vector<ProfileThemeSpec>& themes, int variantsPerTheme, const std::string& iniPath)
+{
+    if (themes.empty()) return;
+    static constexpr std::array<const char*, 5> kFiveChins = {"round", "square", "pointed", "cleft", "double"};
+    static constexpr std::array<const char*, 7> kSevenNoses = {"classic", "aquiline", "button", "broad", "long", "ski", "bulbous"};
+
+    int nextProfSlot = 127;
+    for (size_t i = 0; i < themes.size(); ++i) {
+        const auto& t = themes.at(i);
+        for (int v = 0; v < variantsPerTheme && nextProfSlot <= 254; ++v) {
+            int idL = nextProfSlot++;
+            int idR = nextProfSlot++;
+            const char* cStyle = kFiveChins.at(static_cast<size_t>(v) % kFiveChins.size());
+            const char* nStyle = kSevenNoses.at(static_cast<size_t>(i + v) % kSevenNoses.size());
+
+            saveSvgAssetAt("face",    idL, build3dProfileHeadSvg("spl" + std::to_string(idL), "left",  t.skinHi, t.skinMid, t.skinDeep, t.muzzleHi, t.muzzleMid, t.muzzleDeep, cStyle));
+            saveSvgAssetAt("face",    idR, build3dProfileHeadSvg("spr" + std::to_string(idR), "right", t.skinHi, t.skinMid, t.skinDeep, t.muzzleHi, t.muzzleMid, t.muzzleDeep, cStyle));
+            saveSvgAssetAt("makeup",  idL, build3dProfileMakeupSvg("left",  static_cast<int>(i) + v));
+            saveSvgAssetAt("makeup",  idR, build3dProfileMakeupSvg("right", static_cast<int>(i) + v));
+            saveSvgAssetAt("ears",    idL, build3dProfileEarsSvg("sel" + std::to_string(idL), "left",  t.skinHi, t.skinMid, t.skinDeep, t.muzzleMid, t.muzzleDeep, t.earR));
+            saveSvgAssetAt("ears",    idR, build3dProfileEarsSvg("ser" + std::to_string(idR), "right", t.skinHi, t.skinMid, t.skinDeep, t.muzzleMid, t.muzzleDeep, t.earR));
+            saveSvgAssetAt("nose",    idL, build3dProfileNoseSvg("snl" + std::to_string(idL), "left",  t.muzzleHi, t.muzzleMid, t.muzzleDeep, nStyle));
+            saveSvgAssetAt("nose",    idR, build3dProfileNoseSvg("snr" + std::to_string(idR), "right", t.muzzleHi, t.muzzleMid, t.muzzleDeep, nStyle));
+            saveSvgAssetAt("brows",   idL, build3dProfileBrowsSvg("left",  t.hairDeep, t.hairMid, (static_cast<int>(i) + v) % 6));
+            saveSvgAssetAt("brows",   idR, build3dProfileBrowsSvg("right", t.hairDeep, t.hairMid, (static_cast<int>(i) + v) % 6));
+            saveSvgAssetAt("beard",   idL, build3dProfileBeardSvg("left",  t.hairDeep, t.hairDark, t.hairMid, static_cast<int>(i) + v));
+            saveSvgAssetAt("beard",   idR, build3dProfileBeardSvg("right", t.hairDeep, t.hairDark, t.hairMid, static_cast<int>(i) + v));
+            saveSvgAssetAt("glasses", idL, build3dProfileGlassesSvg("left",  static_cast<int>(i) + v));
+            saveSvgAssetAt("glasses", idR, build3dProfileGlassesSvg("right", static_cast<int>(i) + v));
+            saveSvgAssetAt("hair",    idL, build3dProfileHairSvg("left",  t.hairDeep, t.hairDark, t.hairMid, (static_cast<int>(i) + v) % 8));
+            saveSvgAssetAt("hair",    idR, build3dProfileHairSvg("right", t.hairDeep, t.hairDark, t.hairMid, (static_cast<int>(i) + v) % 8));
+            saveSvgAssetAt("hat",     idL, build3dProfileHatSvg("left",  static_cast<int>(i) + v));
+            saveSvgAssetAt("hat",     idR, build3dProfileHatSvg("right", static_cast<int>(i) + v));
+
+            appendFaceOffsets(idL, {{"face_split", "75"}, {"mouth_split", "75"}}, iniPath);
+            appendFaceOffsets(idR, {{"face_split", "75"}, {"mouth_split", "75"}}, iniPath);
+
+            int mkId = (t.useMakeup  || (v % 3 == 1)) ? idL : 0;
+            int bdId = (t.useBeard   || (v % 2 == 1)) ? idL : 0;
+            int glId = (t.useGlasses || (v % 3 == 2)) ? idL : 0;
+            int htId = (t.useHat     || (v % 2 == 0)) ? idL : 0;
+            bool isDual = (v % 2 == 1);
+            int slotFace = (!isDual && (v == 2)) ? idR : idL;
+
+            appendMacroCombo({
+                slotFace, mkId, slotFace, slotFace, bdId, glId, slotFace, htId, slotFace,
+                t.bgScene, 0, t.teeth, t.lipColor, t.eyelash, t.eyeStyle, -1, t.animId, isDual, t.eyeBank
+            }, iniPath);
+        }
+    }
 }
 
 // ------------------------------------------------------------------------------

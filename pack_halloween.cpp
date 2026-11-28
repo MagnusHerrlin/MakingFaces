@@ -452,6 +452,9 @@ struct PaletteTriple {
 // ------------------------------------------------------------------------------
 // 9. Generate 10 Skulls, 10 Pumpkins, 10 Vampires, 10 Franks, 10 Wolves & 10 Mummies
 // ------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
+// 9. Generate 60 Horror Icons + 50 Complete Side-Profile Pairs (127..226) & ZIP
+// ------------------------------------------------------------------------------
 int main(void)
 {
     ensureBaseIni();
@@ -523,6 +526,7 @@ int main(void)
         appendFaceOffsets(fId, {{"mouth_y", "16"}, {"brows_y", "-10"}});
         appendMacroCombo({fId, (i >= 7) ? mkCreepy : 0, 0, 0, 0, 0, 0, (i == 6) ? htWitch : ((i == 0) ? htBat : 0), 1, bgs.at((i + 2) % 4), 4097, 11, 7, 0, 202, -1, 18 + i, false, -1});
     }
+
     static constexpr std::array<PaletteTriple, 10> kVampPal = {{
         {"#f7f4f0","#e2dcd5","#a3998e","#423a32"}, {"#f2f0ec","#d9d4cc","#999187","#3d3730"},
         {"#fff5f7","#ebd5dc","#ab8593","#4a2c38"}, {"#f0f2f5","#d4dae0","#8c96a0","#323b42"},
@@ -564,28 +568,20 @@ int main(void)
         appendMacroCombo({fId, (i < 5) ? mkCreepy : mkVamp, (i >= 5) ? erNosf2 : 0, (i < 5) ? nsTan : nsGreen, 0, 0, 0, (i >= 5) ? htWitch : 0, brVamp, bgs.at((i + 3) % 4), 1024, (i < 5) ? 15 : 13, 7, 0, 224, -1, 50 + (i % 14), false, -1});
     }
 
-    int nextProfSlot = 127;
-    std::array<std::array<const char*, 4>, 4> kProfThemes = {{
-        {"#fef9c3","#e2e8f0","#64748b","#ffffff"}, {"#fdba74","#ea580c","#450a0a","#fef08a"},
-        {"#bef264","#4d7c0f","#14532d","#fef9c3"}, {"#d6b88d","#78350f","#1e293b","#ffffff"}
-    }};
-
-    for (int p = 0; p < 4; ++p)
+    std::vector<ProfileThemeSpec> profThemes;
+    for (int i = 0; i < 10; ++i)
     {
-        const auto& th = kProfThemes.at(p);
-        int idL = nextProfSlot++, idR = nextProfSlot++;
-        saveSvgAssetAt("face",  idL, build3dProfileSkullSvg("hpl" + std::to_string(idL), "left",  th.at(0), th.at(1), th.at(2), th.at(3)));
-        saveSvgAssetAt("face",  idR, build3dProfileSkullSvg("hpr" + std::to_string(idR), "right", th.at(0), th.at(1), th.at(2), th.at(3)));
-        saveSvgAssetAt("beard", idL, build3dProfileSkullJawSvg("hjl" + std::to_string(idL), "left",  th.at(0), th.at(1), th.at(2), th.at(3)));
-        saveSvgAssetAt("beard", idR, build3dProfileSkullJawSvg("hjr" + std::to_string(idR), "right", th.at(0), th.at(1), th.at(2), th.at(3)));
-        appendFaceOffsets(idL, {{"mouth_y", "14"}, {"face_split", "75"}});
-        appendFaceOffsets(idR, {{"mouth_y", "14"}, {"face_split", "75"}});
-        appendMacroCombo({idL, 0, 0, 0, idL, 0, 0, 0, 0, bgs.at(p), 0, 0, 0, 0, 202, -1, 20 + p, false, -1});
-        appendMacroCombo({idR, 0, 0, 0, idR, 0, 0, 0, 0, bgs.at(p), 0, 0, 0, 0, 202, -1, 20 + p, false, -1});
-        appendMacroCombo({idL, 0, 0, 0, idL, 0, 0, 0, 0, bgs.at(p), 0, 0, 0, 0, 202, -1, 20 + p, true,  -1});
+        const auto& vp = kVampPal.at(i);
+        profThemes.push_back({
+            vp.c1, vp.c2, vp.c3, vp.c1, vp.c2, vp.c3,
+            "#090d16", "#1e1b4b", "#4c1d95",
+            48, bgs.at(i % 4), 3, 4, 0, 138, 20 + i, -1,
+            true, (i % 2 == 1), (i % 3 == 0), (i % 2 == 0)
+        });
     }
+    generateStandardSideProfileSuite(profThemes, 5);
 
     cleanSvgAndSaveZip("halloween");
-    std::cout << "[OK] 100% C++17 60 Horror Icons + Furry 3D Werewolves + 3D Nosferatu Ears zipped to packs/halloween.zip!\n";
+    std::cout << "[OK] 100% C++17 60 Horror Icons + 50 Complete Side-Profile Pairs (127..226) zipped to packs/halloween.zip!\n";
     return 0;
 }
